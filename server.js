@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -27,6 +28,12 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+
+function publicUrl(req, filename) {
+  const proto = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  return `${proto}://${host}/media/${filename}`;
+}
 
 function authenticate(req, res, next) {
   const auth = req.headers.authorization;
@@ -55,7 +62,7 @@ app.post('/upload', authenticate, upload.single('file'), (req, res) => {
   const { filename } = req.file;
   res.json({
     filename,
-    url: `http://${req.hostname}:${PORT}/media/${filename}`,
+    url: publicUrl(req, filename),
   });
 });
 
@@ -75,7 +82,7 @@ app.get('/dashboard', (req, res) => {
 app.get('/files', authenticate, (req, res) => {
   const files = fs.readdirSync(UPLOADS_DIR).map((name) => ({
     name,
-    url: `http://${req.hostname}:${PORT}/media/${name}`,
+    url: publicUrl(req, name),
   }));
   res.json(files);
 });
