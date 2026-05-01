@@ -2,3 +2,5 @@ node_modules/
 uploads/
 .env
 *.tar.gz
+*.md
+*.dockerignore

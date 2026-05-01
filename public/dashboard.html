@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MEDIA — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c0b;
+      --surface: #131312;
+      --surface2: #1a1a18;
+      --border: #2a2a28;
+      --amber: #c8a96e;
+      --amber-dim: #7a6340;
+      --text: #e8e4dc;
+      --muted: #6b6860;
+      --error: #c46a55;
+      --success: #6a9e6e;
+      --mono: 'IBM Plex Mono', monospace;
+      --serif: 'EB Garamond', Georgia, serif;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--mono); }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .layout {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* Nav */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+
+    .wordmark {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      color: var(--amber);
+      text-transform: uppercase;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    .btn-logout {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .btn-logout:hover { color: var(--text); border-color: var(--muted); }
+
+    /* Section label */
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* Upload zone */
+    .upload-section { margin-bottom: 56px; }
+
+    .drop-zone {
+      border: 1px dashed var(--border);
+      background: var(--surface);
+      padding: 48px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+
+    .drop-zone.dragover {
+      border-color: var(--amber-dim);
+      background: var(--surface2);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-icon {
+      font-family: var(--serif);
+      font-size: 2rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .drop-text {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .drop-text strong { color: var(--amber); font-weight: 400; }
+
+    /* Upload progress */
+    .upload-status {
+      margin-top: 12px;
+      font-size: 12px;
+      min-height: 20px;
+    }
+
+    .upload-status.error { color: var(--error); }
+    .upload-status.success { color: var(--success); }
+
+    .progress-bar-wrap {
+      height: 2px;
+      background: var(--border);
+      margin-top: 12px;
+      display: none;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--amber);
+      width: 0%;
+      transition: width 0.2s;
+    }
+
+    /* File list */
+    .files-section {}
+
+    .files-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .file-count {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .file-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      transition: border-color 0.12s;
+      animation: fadeIn 0.2s ease both;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+    .file-item:hover { border-color: var(--amber-dim); }
+
+    .file-info { min-width: 0; }
+
+    .file-name {
+      font-size: 13px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .file-url {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .btn-copy {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s, background 0.12s;
+      white-space: nowrap;
+    }
+
+    .btn-copy:hover { color: var(--amber); border-color: var(--amber-dim); }
+    .btn-copy.copied { color: var(--success); border-color: var(--success); background: rgba(106,158,110,0.06); }
+
+    .btn-open {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 12px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      transition: color 0.12s, border-color 0.12s;
+    }
+
+    .btn-open:hover { color: var(--text); border-color: var(--muted); }
+
+    .empty-state {
+      text-align: center;
+      padding: 64px 0;
+      color: var(--muted);
+    }
+
+    .empty-state p { font-family: var(--serif); font-size: 1.25rem; margin-bottom: 8px; }
+    .empty-state span { font-size: 11px; letter-spacing: 0.1em; }
+
+    .spinner-inline {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 1.5px solid var(--border);
+      border-top-color: var(--muted);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 24px;
+      text-align: center;
+      font-size: 10px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      z-index: 100;
+    }
+
+    footer a {
+      color: var(--amber);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    footer a:hover {
+      color: var(--text);
+    }
+
+    .layout {
+      padding-bottom: 80px;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav>
+      <div class="wordmark">Media</div>
+      <div class="nav-right">
+        <span class="nav-label" id="navUser"></span>
+        <button class="btn-logout" id="logoutBtn">Sign out</button>
+      </div>
+    </nav>
+
+    <!-- Upload -->
+    <section class="upload-section">
+      <div class="section-label">Upload</div>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" multiple />
+        <span class="drop-icon">+</span>
+        <p class="drop-text"><strong>Choose files</strong> or drag and drop here</p>
+      </div>
+      <div class="progress-bar-wrap" id="progressWrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="upload-status" id="uploadStatus"></div>
+    </section>
+
+    <!-- Files -->
+    <section class="files-section">
+      <div class="files-header">
+        <div class="section-label" style="margin-bottom:0">Your Files</div>
+        <span class="file-count" id="fileCount"></span>
+      </div>
+      <div class="file-list" id="fileList">
+        <div class="empty-state">
+          <span class="spinner-inline"></span>
+          <span style="font-size:12px;color:var(--muted)">Loading…</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    a product of <a href="https://softwarepulses.com" target="_blank" rel="noopener">softwarepulses</a>
+  </footer>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/';
+
+    // Decode username from JWT payload (no lib needed)
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      document.getElementById('navUser').textContent = payload.username || '';
+    } catch {}
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location.href = '/';
+    });
+
+    // ── File list ─────────────────────────────────────────
+    async function loadFiles() {
+      const list = document.getElementById('fileList');
+      try {
+        const res = await fetch('/files', { headers: { Authorization: `Bearer ${token}` } });
+        if (res.status === 401) { localStorage.removeItem('token'); window.location.href = '/'; return; }
+        const files = await res.json();
+        renderFiles(files);
+      } catch {
+        list.innerHTML = '<div class="empty-state"><span style="color:var(--error);font-size:12px">Failed to load files.</span></div>';
+      }
+    }
+
+    function renderFiles(files) {
+      const list = document.getElementById('fileList');
+      const count = document.getElementById('fileCount');
+      count.textContent = files.length ? `${files.length} file${files.length === 1 ? '' : 's'}` : '';
+
+      if (!files.length) {
+        list.innerHTML = '<div class="empty-state"><p>No files yet</p><span>Upload something above</span></div>';
+        return;
+      }
+
+      list.innerHTML = '';
+      files.forEach(({ name, url }, i) => {
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        item.style.animationDelay = `${i * 30}ms`;
+        item.innerHTML = `
+          <div class="file-info">
+            <div class="file-name">${escHtml(name)}</div>
+            <div class="file-url">${escHtml(url)}</div>
+          </div>
+          <div class="file-actions">
+            <button class="btn-copy" data-url="${escHtml(url)}">Copy link</button>
+            <a class="btn-open" href="${escHtml(url)}" target="_blank" rel="noopener">Open ↗</a>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+
+      list.querySelectorAll('.btn-copy').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await navigator.clipboard.writeText(btn.dataset.url);
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = 'Copy link'; btn.classList.remove('copied'); }, 1800);
+        });
+      });
+    }
+
+    // ── Upload ────────────────────────────────────────────
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const statusEl = document.getElementById('uploadStatus');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      uploadFiles([...e.dataTransfer.files]);
+    });
+    fileInput.addEventListener('change', () => { uploadFiles([...fileInput.files]); fileInput.value = ''; });
+
+    async function uploadFiles(files) {
+      if (!files.length) return;
+      setStatus('', '');
+      progressWrap.style.display = 'block';
+      progressBar.style.width = '0%';
+
+      let done = 0;
+      const errors = [];
+
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append('file', file);
+        try {
+          const res = await fetch('/upload', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: fd,
+          });
+          if (!res.ok) { errors.push(file.name); }
+        } catch { errors.push(file.name); }
+        done++;
+        progressBar.style.width = `${(done / files.length) * 100}%`;
+      }
+
+      setTimeout(() => { progressWrap.style.display = 'none'; }, 600);
+
+      if (errors.length) {
+        setStatus(`${done - errors.length} uploaded, ${errors.length} failed.`, 'error');
+      } else {
+        setStatus(`${done} file${done === 1 ? '' : 's'} uploaded.`, 'success');
+      }
+
+      loadFiles();
+    }
+
+    function setStatus(msg, type) {
+      statusEl.textContent = msg;
+      statusEl.className = 'upload-status' + (type ? ` ${type}` : '');
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    loadFiles();
+  </script>
+</body>
+</html>
