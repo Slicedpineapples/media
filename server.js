@@ -14,12 +14,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
+const METADATA_FILE = path.join(UPLOADS_DIR, '.metadata.json');
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8005;
 const ADMIN_USER = process.env.ADMIN_USER;
 const ADMIN_PASS_HASH = bcrypt.hashSync(process.env.ADMIN_PASS, 10);
 const MAX_UPLOAD_BYTES = Number(process.env.MAX_UPLOAD_BYTES || 100 * 1024 * 1024);
+const ROOT_FOLDER = '';
 
 const ALLOWED_UPLOADS = new Map([
   ['.apng', new Set(['image/apng'])],
@@ -48,6 +50,37 @@ function allowedUpload(file) {
 
 function allowedStoredFile(filename) {
   return ALLOWED_UPLOADS.has(path.extname(filename).toLowerCase());
+}
+
+function sanitizeFolderPath(value) {
+  const raw = String(value || ROOT_FOLDER).trim();
+  if (!raw || raw === '/') return ROOT_FOLDER;
+
+  const segments = raw
+    .split('/')
+    .map((segment) => segment.trim().replace(/\s+/g, ' ').replace(/[^\w .-]/g, '').slice(0, 60))
+    .filter((segment) => segment && segment !== '.' && segment !== '..');
+
+  return segments.slice(0, 5).join('/');
+}
+
+function safeUploadsPath(relativePath = ROOT_FOLDER) {
+  const target = path.resolve(UPLOADS_DIR, relativePath);
+  const root = path.resolve(UPLOADS_DIR);
+  if (target !== root && !target.startsWith(root + path.sep)) return null;
+  return target;
+}
+
+function ensureUploadFolder(folder) {
+  const safeFolder = sanitizeFolderPath(folder);
+  const folderPath = safeUploadsPath(safeFolder);
+  if (!folderPath) return null;
+  fs.mkdirSync(folderPath, { recursive: true });
+  return { folder: safeFolder, folderPath };
+}
+
+function relativeFilePath(folder, filename) {
+  return folder ? `${folder}/${filename}` : filename;
 }
 
 function hasAscii(buffer, offset, text) {
@@ -118,8 +151,134 @@ function removeUploadedFile(file) {
   fs.unlink(file.path, () => {});
 }
 
+function loadMetadata() {
+  try {
+    return JSON.parse(fs.readFileSync(METADATA_FILE, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+function saveMetadata(metadata) {
+  fs.writeFileSync(METADATA_FILE, JSON.stringify(metadata, null, 2));
+}
+
+function recordUpload(filename, size = 0) {
+  const metadata = loadMetadata();
+  metadata[filename] = {
+    uploadedAt: new Date().toISOString(),
+    size,
+  };
+  saveMetadata(metadata);
+}
+
+function listFolders(dir = UPLOADS_DIR, prefix = ROOT_FOLDER) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    if (!entry.isDirectory()) return [];
+
+    const folder = prefix ? `${prefix}/${entry.name}` : entry.name;
+    const childPath = path.join(dir, entry.name);
+    return [folder, ...listFolders(childPath, folder)];
+  });
+}
+
+function listStoredFiles(dir = UPLOADS_DIR, prefix = ROOT_FOLDER) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    if (entry.name === '.metadata.json') return [];
+
+    const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) return listStoredFiles(fullPath, relativePath);
+    if (!prefix) return [];
+    if (!entry.isFile() || !allowedStoredFile(entry.name)) return [];
+
+    return [{ name: entry.name, folder: prefix, path: relativePath }];
+  });
+}
+
+function directoryContents(req, folder = ROOT_FOLDER) {
+  const safeFolder = sanitizeFolderPath(folder);
+  const folderPath = safeUploadsPath(safeFolder);
+  if (!folderPath || !fs.existsSync(folderPath) || !fs.statSync(folderPath).isDirectory()) return null;
+
+  const metadata = loadMetadata();
+  const entries = fs.readdirSync(folderPath, { withFileTypes: true });
+
+  const folders = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => {
+      const folderRelativePath = relativeFilePath(safeFolder, entry.name);
+      return {
+        name: entry.name,
+        path: folderRelativePath,
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const files = safeFolder ? entries
+    .filter((entry) => entry.isFile() && entry.name !== '.metadata.json' && allowedStoredFile(entry.name))
+    .map((entry) => {
+      const filePath = relativeFilePath(safeFolder, entry.name);
+      const stat = fs.statSync(path.join(folderPath, entry.name));
+      return {
+        name: entry.name,
+        folder: safeFolder,
+        path: filePath,
+        size: stat.size || metadata[filePath]?.size || 0,
+        uploadedAt: metadata[filePath]?.uploadedAt || null,
+        url: publicUrl(req, filePath),
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name)) : [];
+
+  return {
+    folder: safeFolder,
+    parent: safeFolder.split('/').slice(0, -1).join('/'),
+    folders,
+    files,
+  };
+}
+
+function removeMetadataForPath(itemPath) {
+  const metadata = loadMetadata();
+  Object.keys(metadata).forEach((key) => {
+    if (key === itemPath || key.startsWith(itemPath + '/')) delete metadata[key];
+  });
+  saveMetadata(metadata);
+}
+
+function deleteUploadItem(item) {
+  const type = item?.type === 'folder' ? 'folder' : 'file';
+  const itemPath = sanitizeFolderPath(item?.path);
+  if (!itemPath) return false;
+
+  const fullPath = safeUploadsPath(itemPath);
+  if (!fullPath || !fs.existsSync(fullPath)) return false;
+
+  const stat = fs.statSync(fullPath);
+  if (type === 'folder') {
+    if (!stat.isDirectory()) return false;
+    fs.rmSync(fullPath, { recursive: true, force: true });
+  } else {
+    if (!stat.isFile() || !allowedStoredFile(path.basename(itemPath))) return false;
+    fs.unlinkSync(fullPath);
+  }
+
+  removeMetadataForPath(itemPath);
+  return true;
+}
+
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  destination: (req, file, cb) => {
+    const requestedFolder = req.body.folder || req.query.folder || req.headers['x-upload-folder'];
+    if (!sanitizeFolderPath(requestedFolder)) return cb(new Error('Choose a folder first'));
+
+    const uploadFolder = ensureUploadFolder(requestedFolder);
+    if (!uploadFolder) return cb(new Error('Invalid folder'));
+    req.uploadFolder = uploadFolder.folder;
+    cb(null, uploadFolder.folderPath);
+  },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     cb(null, uuidv4() + ext);
@@ -130,7 +289,7 @@ const upload = multer({
   limits: { fileSize: MAX_UPLOAD_BYTES },
   fileFilter: (req, file, cb) => {
     if (!allowedUpload(file)) {
-      return cb(new Error('Unsupported file type. Upload images, audio, or video only.'));
+      return cb(new Error('Unsupported file type'));
     }
     cb(null, true);
   },
@@ -140,7 +299,8 @@ const uploadSingleFile = upload.single('file');
 function publicUrl(req, filename) {
   const proto = req.headers['x-forwarded-proto'] || req.protocol;
   const host = req.headers['x-forwarded-host'] || req.headers.host;
-  return `${proto}://${host}/media/${filename}`;
+  const encodedPath = filename.split('/').map(encodeURIComponent).join('/');
+  return `${proto}://${host}/media/${encodedPath}`;
 }
 
 function authenticate(req, res, next) {
@@ -177,22 +337,38 @@ app.post('/upload', authenticate, (req, res) => {
 
     if (!validateStoredUpload(req.file)) {
       removeUploadedFile(req.file);
-      return res.status(400).json({ error: 'File content does not match an allowed media type' });
+      return res.status(400).json({ error: 'Unsupported file type' });
     }
 
     const { filename } = req.file;
+    const folder = req.uploadFolder || ROOT_FOLDER;
+    const filePath = relativeFilePath(folder, filename);
+    recordUpload(filePath, req.file.size);
+
     res.json({
       filename,
-      url: publicUrl(req, filename),
+      path: filePath,
+      folder,
+      size: req.file.size,
+      url: publicUrl(req, filePath),
     });
   });
 });
 
-app.get('/media/:filename', (req, res) => {
-  const filename = path.basename(req.params.filename);
+app.get('/media/*', (req, res) => {
+  let requestedPath;
+  try {
+    requestedPath = req.params[0].split('/').map(decodeURIComponent).join('/');
+  } catch {
+    return res.status(404).json({ error: 'Not found' });
+  }
+
+  const safePath = sanitizeFolderPath(path.dirname(requestedPath));
+  const filename = path.basename(requestedPath);
   if (!allowedStoredFile(filename)) return res.status(404).json({ error: 'Not found' });
 
-  const filepath = path.join(UPLOADS_DIR, filename);
+  const filepath = safeUploadsPath(relativeFilePath(safePath, filename));
+  if (!filepath) return res.status(404).json({ error: 'Not found' });
   if (!fs.existsSync(filepath)) return res.status(404).json({ error: 'Not found' });
   res.sendFile(filepath, {
     headers: {
@@ -206,13 +382,56 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
+app.get('/folders', authenticate, (req, res) => {
+  res.json(listFolders());
+});
+
+app.post('/folders', authenticate, (req, res) => {
+  const parent = sanitizeFolderPath(req.body.parent);
+  const requestedFolder = req.body.folder;
+  const folder = parent && requestedFolder
+    ? relativeFilePath(parent, requestedFolder)
+    : requestedFolder;
+  const uploadFolder = ensureUploadFolder(folder);
+  if (!uploadFolder || !uploadFolder.folder) {
+    return res.status(400).json({ error: 'Invalid folder' });
+  }
+  res.status(201).json({ folder: uploadFolder.folder });
+});
+
+app.get('/browse', authenticate, (req, res) => {
+  const contents = directoryContents(req, req.query.folder);
+  if (!contents) return res.status(404).json({ error: 'Folder not found' });
+  res.json(contents);
+});
+
+app.delete('/items', authenticate, (req, res) => {
+  const items = Array.isArray(req.body.items) ? req.body.items : [];
+  if (!items.length) return res.status(400).json({ error: 'No items selected' });
+
+  let deleted = 0;
+  items.forEach((item) => {
+    if (deleteUploadItem(item)) deleted++;
+  });
+
+  res.json({ deleted });
+});
+
 app.get('/files', authenticate, (req, res) => {
-  const files = fs.readdirSync(UPLOADS_DIR)
-    .filter(allowedStoredFile)
-    .map((name) => ({
-      name,
-      url: publicUrl(req, name),
-    }));
+  const metadata = loadMetadata();
+  const files = listStoredFiles()
+    .map(({ name, folder, path: filePath }) => {
+      const fullPath = safeUploadsPath(filePath);
+      const stat = fullPath && fs.existsSync(fullPath) ? fs.statSync(fullPath) : null;
+      return {
+        name,
+        folder,
+        path: filePath,
+        size: stat?.size || metadata[filePath]?.size || 0,
+        uploadedAt: metadata[filePath]?.uploadedAt || null,
+        url: publicUrl(req, filePath),
+      };
+    });
   res.json(files);
 });
 

@@ -6,7 +6,7 @@ A lightweight authenticated media hosting service for uploading images, audio, a
 
 - JWT-protected login, upload, and file listing
 - Public media URLs under `/media/:filename`
-- Dashboard UI for upload, preview, copy link, and open actions
+- Dashboard UI with a macOS-style file-explorer view, toolbar navigation, search, upload, select, delete, folders, previews, copy link, and open actions
 - Local persistent storage through the `uploads` Docker volume
 - Backend file filtering with extension, MIME type, and file signature checks
 - Docker-based local run and GHCR-based production deploy
@@ -96,15 +96,78 @@ Content-Type: multipart/form-data
 Form field:
 
 ```text
+folder required
 file
 ```
+
+For direct multipart API calls, send `folder` before `file`, or pass it as `?folder=Uploads` / `X-Upload-Folder: Uploads`.
+
+The root directory can contain folders only. Uploads to root are rejected; open or create a folder before uploading media.
 
 Response:
 
 ```json
 {
   "filename": "uuid.ext",
-  "url": "https://your-host/media/uuid.ext"
+  "path": "Uploads/uuid.ext",
+  "folder": "Uploads",
+  "size": 24576,
+  "url": "https://your-host/media/Uploads/uuid.ext"
+}
+```
+
+### Create Folder
+
+```http
+POST /folders
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+```json
+{
+  "folder": "Uploads"
+}
+```
+
+Nested folders are supported with `/`, for example `Uploads/June`. Folder names are sanitized on the backend and always stay inside `uploads/`.
+
+### List Folders
+
+```http
+GET /folders
+Authorization: Bearer <token>
+```
+
+### Browse Folder
+
+```http
+GET /browse?folder=Uploads
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "folder": "Uploads",
+  "parent": "",
+  "folders": [
+    {
+      "name": "June",
+      "path": "Uploads/June"
+    }
+  ],
+  "files": [
+    {
+      "name": "uuid.ext",
+      "path": "Uploads/uuid.ext",
+      "folder": "Uploads",
+      "size": 24576,
+      "uploadedAt": "2026-06-01T15:00:00.000Z",
+      "url": "https://your-host/media/Uploads/uuid.ext"
+    }
+  ]
 }
 ```
 
@@ -115,10 +178,37 @@ GET /files
 Authorization: Bearer <token>
 ```
 
+This returns every file across all folders. Use `/browse` for the file-explorer view.
+
+### Delete Items
+
+```http
+DELETE /items
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+```json
+{
+  "items": [
+    { "type": "file", "path": "Uploads/uuid.ext" },
+    { "type": "folder", "path": "Uploads/Old" }
+  ]
+}
+```
+
+Response:
+
+```json
+{
+  "deleted": 2
+}
+```
+
 ### Public Media
 
 ```http
-GET /media/:filename
+GET /media/:path
 ```
 
 ## Upload Security
@@ -129,7 +219,7 @@ Uploads are rejected unless they pass all backend checks:
 - Browser-provided MIME type must match the extension
 - Stored file bytes must match a known media file signature
 - Stored filenames are generated as UUIDs
-- Disallowed existing files are hidden from `/files` and blocked from `/media/:filename`
+- Disallowed existing files are hidden from `/files` and blocked from `/media/:path`
 - Served media includes `X-Content-Type-Options: nosniff`
 
 Allowed types:

@@ -383,6 +383,7 @@
         }
 
         localStorage.setItem('token', data.token);
+        localStorage.removeItem('currentFolder');
         window.location.href = '/dashboard';
       } catch {
         showError('Could not reach the server. Try again.');
