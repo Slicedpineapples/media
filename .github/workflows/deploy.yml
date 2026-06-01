@@ -100,7 +100,7 @@ jobs:
           PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
         run: |
           ssh -o StrictHostKeyChecking=no wolrdpc "mkdir -p $SERVER_APP_PATH"
-          scp -o StrictHostKeyChecking=no docker-compose.yml wolrdpc:"$SERVER_APP_PATH/docker-compose.yml"
+          scp -o StrictHostKeyChecking=no docker-compose.prod.yml wolrdpc:"$SERVER_APP_PATH/docker-compose.yml"
 
           if [ -n "$PRODUCTION_ENV" ]; then
             printf '%s\n' "$PRODUCTION_ENV" | ssh -o StrictHostKeyChecking=no wolrdpc "cat > $SERVER_APP_PATH/.env"

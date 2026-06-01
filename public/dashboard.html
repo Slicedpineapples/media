@@ -192,7 +192,7 @@
 
     .file-item {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 84px 1fr auto;
       align-items: center;
       gap: 16px;
       background: var(--surface);
@@ -205,6 +205,30 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
     .file-item:hover { border-color: var(--amber-dim); }
+
+    .file-preview {
+      width: 84px;
+      height: 58px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .file-preview img,
+    .file-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
     .file-info { min-width: 0; }
 
@@ -263,6 +287,23 @@
     }
 
     .btn-open:hover { color: var(--text); border-color: var(--muted); }
+
+    @media (max-width: 640px) {
+      .file-item {
+        grid-template-columns: 64px 1fr;
+        align-items: start;
+      }
+
+      .file-preview {
+        width: 64px;
+        height: 48px;
+      }
+
+      .file-actions {
+        grid-column: 2;
+        flex-wrap: wrap;
+      }
+    }
 
     .empty-state {
       text-align: center;
@@ -403,6 +444,7 @@
         item.className = 'file-item';
         item.style.animationDelay = `${i * 30}ms`;
         item.innerHTML = `
+          ${previewHtml(name, url)}
           <div class="file-info">
             <div class="file-name">${escHtml(name)}</div>
             <div class="file-url">${escHtml(url)}</div>
@@ -423,6 +465,26 @@
           setTimeout(() => { btn.textContent = 'Copy link'; btn.classList.remove('copied'); }, 1800);
         });
       });
+    }
+
+    function previewHtml(name, url) {
+      const safeName = escHtml(name);
+      const safeUrl = escHtml(url);
+      const ext = name.split('.').pop().toLowerCase();
+
+      if (['apng', 'avif', 'gif', 'jpg', 'jpeg', 'png', 'svg', 'webp'].includes(ext)) {
+        return `<a class="file-preview" href="${safeUrl}" target="_blank" rel="noopener" aria-label="Preview ${safeName}"><img src="${safeUrl}" alt="${safeName}" loading="lazy" /></a>`;
+      }
+
+      if (['mp4', 'ogg', 'ogv', 'mov', 'webm'].includes(ext)) {
+        return `<a class="file-preview" href="${safeUrl}" target="_blank" rel="noopener" aria-label="Preview ${safeName}"><video src="${safeUrl}" muted preload="metadata"></video></a>`;
+      }
+
+      if (['aac', 'flac', 'm4a', 'mp3', 'wav'].includes(ext)) {
+        return `<a class="file-preview" href="${safeUrl}" target="_blank" rel="noopener" aria-label="Open ${safeName}">Audio</a>`;
+      }
+
+      return `<a class="file-preview" href="${safeUrl}" target="_blank" rel="noopener" aria-label="Open ${safeName}">File</a>`;
     }
 
     // ── Upload ────────────────────────────────────────────
