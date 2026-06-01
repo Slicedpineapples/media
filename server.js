@@ -19,6 +19,36 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const PORT = process.env.PORT || 3000;
 const ADMIN_USER = process.env.ADMIN_USER;
 const ADMIN_PASS_HASH = bcrypt.hashSync(process.env.ADMIN_PASS, 10);
+const MAX_UPLOAD_BYTES = Number(process.env.MAX_UPLOAD_BYTES || 100 * 1024 * 1024);
+
+const ALLOWED_UPLOADS = new Map([
+  ['.apng', new Set(['image/apng'])],
+  ['.avif', new Set(['image/avif'])],
+  ['.gif', new Set(['image/gif'])],
+  ['.jpg', new Set(['image/jpeg'])],
+  ['.jpeg', new Set(['image/jpeg'])],
+  ['.png', new Set(['image/png'])],
+  ['.webp', new Set(['image/webp'])],
+  ['.aac', new Set(['audio/aac'])],
+  ['.flac', new Set(['audio/flac', 'audio/x-flac'])],
+  ['.m4a', new Set(['audio/mp4', 'audio/x-m4a'])],
+  ['.mp3', new Set(['audio/mpeg'])],
+  ['.ogg', new Set(['audio/ogg', 'video/ogg'])],
+  ['.wav', new Set(['audio/wav', 'audio/x-wav'])],
+  ['.mov', new Set(['video/quicktime'])],
+  ['.mp4', new Set(['video/mp4'])],
+  ['.webm', new Set(['video/webm'])],
+]);
+
+function allowedUpload(file) {
+  const ext = path.extname(file.originalname).toLowerCase();
+  const allowedMimeTypes = ALLOWED_UPLOADS.get(ext);
+  return allowedMimeTypes && allowedMimeTypes.has(file.mimetype);
+}
+
+function allowedStoredFile(filename) {
+  return ALLOWED_UPLOADS.has(path.extname(filename).toLowerCase());
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
@@ -27,7 +57,17 @@ const storage = multer.diskStorage({
     cb(null, uuidv4() + ext);
   },
 });
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: { fileSize: MAX_UPLOAD_BYTES },
+  fileFilter: (req, file, cb) => {
+    if (!allowedUpload(file)) {
+      return cb(new Error('Unsupported file type. Upload images, audio, or video only.'));
+    }
+    cb(null, true);
+  },
+});
+const uploadSingleFile = upload.single('file');
 
 function publicUrl(req, filename) {
   const proto = req.headers['x-forwarded-proto'] || req.protocol;
@@ -57,21 +97,35 @@ app.post('/login', async (req, res) => {
   res.json({ token });
 });
 
-app.post('/upload', authenticate, upload.single('file'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No file provided' });
-  const { filename } = req.file;
-  res.json({
-    filename,
-    url: publicUrl(req, filename),
+app.post('/upload', authenticate, (req, res) => {
+  uploadSingleFile(req, res, (err) => {
+    if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File is too large' });
+    }
+    if (err) {
+      return res.status(400).json({ error: err.message || 'Upload failed' });
+    }
+    if (!req.file) return res.status(400).json({ error: 'No file provided' });
+
+    const { filename } = req.file;
+    res.json({
+      filename,
+      url: publicUrl(req, filename),
+    });
   });
 });
 
 app.get('/media/:filename', (req, res) => {
   const filename = path.basename(req.params.filename);
+  if (!allowedStoredFile(filename)) return res.status(404).json({ error: 'Not found' });
+
   const filepath = path.join(UPLOADS_DIR, filename);
   if (!fs.existsSync(filepath)) return res.status(404).json({ error: 'Not found' });
   res.sendFile(filepath, {
-    headers: { 'Cache-Control': 'public, max-age=31536000' },
+    headers: {
+      'Cache-Control': 'public, max-age=31536000',
+      'X-Content-Type-Options': 'nosniff',
+    },
   });
 });
 
@@ -80,10 +134,12 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/files', authenticate, (req, res) => {
-  const files = fs.readdirSync(UPLOADS_DIR).map((name) => ({
-    name,
-    url: publicUrl(req, name),
-  }));
+  const files = fs.readdirSync(UPLOADS_DIR)
+    .filter(allowedStoredFile)
+    .map((name) => ({
+      name,
+      url: publicUrl(req, name),
+    }));
   res.json(files);
 });
 

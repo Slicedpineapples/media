@@ -472,7 +472,7 @@
       const safeUrl = escHtml(url);
       const ext = name.split('.').pop().toLowerCase();
 
-      if (['apng', 'avif', 'gif', 'jpg', 'jpeg', 'png', 'svg', 'webp'].includes(ext)) {
+      if (['apng', 'avif', 'gif', 'jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
         return `<a class="file-preview" href="${safeUrl}" target="_blank" rel="noopener" aria-label="Preview ${safeName}"><img src="${safeUrl}" alt="${safeName}" loading="lazy" /></a>`;
       }
 
@@ -521,8 +521,12 @@
             headers: { Authorization: `Bearer ${token}` },
             body: fd,
           });
-          if (!res.ok) { errors.push(file.name); }
-        } catch { errors.push(file.name); }
+          if (!res.ok) {
+            errors.push(`${file.name}: ${await uploadErrorMessage(res)}`);
+          }
+        } catch {
+          errors.push(`${file.name}: Network error`);
+        }
         done++;
         progressBar.style.width = `${(done / files.length) * 100}%`;
       }
@@ -530,12 +534,21 @@
       setTimeout(() => { progressWrap.style.display = 'none'; }, 600);
 
       if (errors.length) {
-        setStatus(`${done - errors.length} uploaded, ${errors.length} failed.`, 'error');
+        setStatus(`${done - errors.length} uploaded, ${errors.length} failed. ${errors.join(' ')}`, 'error');
       } else {
         setStatus(`${done} file${done === 1 ? '' : 's'} uploaded.`, 'success');
       }
 
       loadFiles();
+    }
+
+    async function uploadErrorMessage(res) {
+      try {
+        const body = await res.json();
+        return body.error || `Upload failed (${res.status})`;
+      } catch {
+        return `Upload failed (${res.status})`;
+      }
     }
 
     function setStatus(msg, type) {
