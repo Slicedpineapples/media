@@ -1,0 +1,117 @@
+name: Deploy Media Upload Service
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  IMAGE_NAME: ghcr.io/slicedpineapples/media-upload-service:latest
+  SERVER_APP_PATH: ~/media
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check server syntax
+        run: npm run check
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u slicedpineapples --password-stdin
+
+      - name: Build and push Docker image
+        run: |
+          for attempt in 1 2 3; do
+            docker buildx build \
+              --provenance=false \
+              --sbom=false \
+              --push \
+              -t "$IMAGE_NAME" \
+              .
+
+            status=$?
+            if [ "$status" -eq 0 ]; then
+              exit 0
+            fi
+
+            echo "Build/push failed on attempt $attempt."
+            sleep 10
+          done
+
+          exit "$status"
+
+      - name: Install cloudflared
+        run: |
+          wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared-linux-amd64.deb
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          cat > ~/.ssh/cloudflared-proxy.sh <<'EOF'
+          #!/bin/bash
+          cloudflared access ssh \
+            --hostname "$1" \
+            --service-token-id "$CF_ACCESS_CLIENT_ID" \
+            --service-token-secret "$CF_ACCESS_CLIENT_SECRET"
+          EOF
+
+          chmod +x ~/.ssh/cloudflared-proxy.sh
+
+          cat > ~/.ssh/config <<EOF
+          Host wolrdpc
+              HostName zsh.softwarepulses.com
+              User wolrdpc
+              IdentityFile ~/.ssh/id_rsa
+              IdentitiesOnly yes
+              ProxyCommand ~/.ssh/cloudflared-proxy.sh %h
+          EOF
+
+      - name: Deploy on server
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
+        run: |
+          : "${PRODUCTION_ENV:?Set the PRODUCTION_ENV secret}"
+
+          ssh -o StrictHostKeyChecking=no wolrdpc "mkdir -p $SERVER_APP_PATH"
+          scp -o StrictHostKeyChecking=no docker-compose.yml wolrdpc:"$SERVER_APP_PATH/docker-compose.yml"
+          printf '%s\n' "$PRODUCTION_ENV" | ssh -o StrictHostKeyChecking=no wolrdpc "cat > $SERVER_APP_PATH/.env"
+
+          printf '%s' "$GHCR_TOKEN" | ssh -o StrictHostKeyChecking=no wolrdpc '
+            docker login ghcr.io -u slicedpineapples --password-stdin
+          '
+
+          ssh -o StrictHostKeyChecking=no wolrdpc "
+            cd $SERVER_APP_PATH &&
+            docker compose pull &&
+            docker compose up -d &&
+            docker image prune -f
+          "
