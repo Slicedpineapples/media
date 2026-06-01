@@ -1556,7 +1556,7 @@
         <button class="toolbar-btn icon" id="backBtn" type="button" aria-label="Back">&lt;</button>
         <button class="toolbar-btn icon" id="forwardBtn" type="button" aria-label="Forward">&gt;</button>
       </div>
-      <div class="dir-title" id="dirTitle">Root</div>
+      <div class="dir-title" id="dirTitle">Home</div>
       <input class="toolbar-search" id="searchInput" type="search" placeholder="Search" />
       <button class="toolbar-btn" id="createFolderBtn" type="button">New Folder</button>
       <button class="toolbar-btn" id="uploadBtn" type="button">Upload</button>
@@ -1765,7 +1765,7 @@
     function renderBreadcrumbs(folder) {
       const breadcrumbs = document.getElementById('breadcrumbs');
       const parts = folder ? folder.split('/') : [];
-      const crumbs = [{ label: 'Root', path: '' }];
+      const crumbs = [{ label: 'Home', path: '' }];
 
       parts.forEach((part, index) => {
         crumbs.push({
@@ -2090,7 +2090,7 @@
     }
 
     function updateToolbar() {
-      dirTitle.textContent = currentFolder ? currentFolder.split('/').pop() : 'Root';
+      dirTitle.textContent = currentFolder ? currentFolder.split('/').pop() : 'Home';
       backBtn.disabled = !historyBack.length;
       forwardBtn.disabled = !historyForward.length;
       uploadBtn.disabled = !currentFolder;
