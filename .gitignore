@@ -3,4 +3,5 @@ uploads/
 .env
 *.tar.gz
 *.md
+!README.md
 *.dockerignore

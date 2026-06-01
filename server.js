@@ -216,4 +216,8 @@ app.get('/files', authenticate, (req, res) => {
   res.json(files);
 });
 
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
+
 app.listen(PORT, () => console.log(`Media service running on port ${PORT}`));

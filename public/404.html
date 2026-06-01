@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MEDIA - Not Found</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c0b;
+      --surface: #131312;
+      --border: #2a2a28;
+      --amber: #c8a96e;
+      --amber-dim: #7a6340;
+      --text: #e8e4dc;
+      --muted: #6b6860;
+      --mono: 'IBM Plex Mono', monospace;
+      --serif: 'EB Garamond', Georgia, serif;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.2;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .wordmark {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      color: var(--amber);
+      text-transform: uppercase;
+    }
+
+    .code {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      align-content: center;
+      gap: 24px;
+      padding: 72px 0;
+    }
+
+    .label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 {
+      max-width: 760px;
+      font-family: var(--serif);
+      font-size: clamp(3rem, 9vw, 7.5rem);
+      font-weight: 400;
+      line-height: 0.95;
+      color: var(--text);
+    }
+
+    h1 em {
+      color: var(--amber);
+      font-style: italic;
+    }
+
+    p {
+      max-width: 540px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+
+    .btn.primary {
+      background: var(--amber);
+      border-color: var(--amber);
+      color: var(--bg);
+    }
+
+    .btn:hover {
+      color: var(--text);
+      border-color: var(--amber-dim);
+    }
+
+    .btn.primary:hover {
+      background: #d4b87a;
+      color: var(--bg);
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 24px;
+      text-align: center;
+      font-size: 10px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      z-index: 100;
+    }
+
+    footer a {
+      color: var(--amber);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    footer a:hover { color: var(--text); }
+
+    @media (max-width: 640px) {
+      nav { padding-top: 24px; }
+      main { padding: 56px 0; }
+      .actions { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <nav>
+      <div class="wordmark">Media</div>
+      <div class="code">404</div>
+    </nav>
+
+    <main>
+      <div class="label">Not found</div>
+      <h1>This page slipped out of <em>frame</em>.</h1>
+      <p>The URL does not match a media file, dashboard route, or API endpoint. You can return to the sign-in screen or open the dashboard if you already have a valid session.</p>
+      <div class="actions">
+        <a class="btn primary" href="/">Sign in</a>
+        <a class="btn" href="/dashboard">Dashboard</a>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    a product of <a href="https://softwarepulses.com" target="_blank" rel="noopener">softwarepulses</a>
+  </footer>
+</body>
+</html>
