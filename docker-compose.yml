@@ -1,6 +1,6 @@
 services:
   media:
-    build: .
+    image: ghcr.io/slicedpineapples/media-upload-service:latest
     ports:
       - "3000:3000"
     volumes:
