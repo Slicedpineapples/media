@@ -99,11 +99,14 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
         run: |
-          : "${PRODUCTION_ENV:?Set the PRODUCTION_ENV secret}"
-
           ssh -o StrictHostKeyChecking=no wolrdpc "mkdir -p $SERVER_APP_PATH"
           scp -o StrictHostKeyChecking=no docker-compose.yml wolrdpc:"$SERVER_APP_PATH/docker-compose.yml"
-          printf '%s\n' "$PRODUCTION_ENV" | ssh -o StrictHostKeyChecking=no wolrdpc "cat > $SERVER_APP_PATH/.env"
+
+          if [ -n "$PRODUCTION_ENV" ]; then
+            printf '%s\n' "$PRODUCTION_ENV" | ssh -o StrictHostKeyChecking=no wolrdpc "cat > $SERVER_APP_PATH/.env"
+          else
+            echo "PRODUCTION_ENV is not set; keeping the existing server .env file."
+          fi
 
           printf '%s' "$GHCR_TOKEN" | ssh -o StrictHostKeyChecking=no wolrdpc '
             docker login ghcr.io -u slicedpineapples --password-stdin

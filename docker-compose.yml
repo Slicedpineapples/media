@@ -2,7 +2,7 @@ services:
   media:
     image: ghcr.io/slicedpineapples/media-upload-service:latest
     ports:
-      - "3000:3000"
+      - "8005:3000"
     volumes:
       - uploads:/app/uploads
     env_file:
