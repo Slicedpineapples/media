@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#000000" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="Share" />
   <meta name="format-detection" content="telephone=no" />
   <title>Share — Dashboard</title>
@@ -1469,7 +1469,7 @@
         align-items: center;
         align-content: center;
         margin: 0 -22px 18px;
-        padding: max(8px, env(safe-area-inset-top)) 22px 8px;
+        padding: calc(8px + env(safe-area-inset-top)) 22px 8px;
         border-radius: 0;
         border-bottom: 1px solid rgba(255,255,255,0.08);
         background: rgba(0,0,0,0.86);
@@ -1497,7 +1497,7 @@
         min-height: 36px;
         border-radius: 10px;
         background: #1c1c1e;
-        font-size: 15px;
+        font-size: 16px;
       }
 
       .toolbar-btn:not(.icon) {

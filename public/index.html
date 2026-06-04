@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#000000" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="Share" />
   <meta name="format-detection" content="telephone=no" />
   <title>Share - Software Pulses</title>
@@ -678,7 +678,7 @@
 
       .nav-inner {
         grid-template-columns: 1fr auto;
-        min-height: 58px;
+        min-height: calc(58px + env(safe-area-inset-top));
         padding: env(safe-area-inset-top) 16px 0;
         gap: 12px;
       }
@@ -818,8 +818,8 @@
 
     @media (max-width: 520px) {
       .nav-inner {
-        min-height: 56px;
-        padding: 0 18px;
+        min-height: calc(56px + env(safe-area-inset-top));
+        padding: env(safe-area-inset-top) 18px 0;
       }
 
       .brand {
