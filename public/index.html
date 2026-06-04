@@ -3,346 +3,981 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MEDIA — Sign In</title>
+  <title>Share - Software Pulses</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0c0c0b;
-      --surface: #131312;
-      --border: #2a2a28;
-      --amber: #c8a96e;
-      --amber-dim: #7a6340;
-      --text: #e8e4dc;
-      --muted: #6b6860;
-      --error: #c46a55;
-      --mono: 'IBM Plex Mono', monospace;
-      --serif: 'EB Garamond', Georgia, serif;
+      --bg: #101317;
+      --panel: rgba(24, 30, 38, 0.58);
+      --panel-strong: rgba(27, 34, 43, 0.84);
+      --line: rgba(255, 255, 255, 0.12);
+      --line-strong: rgba(214, 222, 232, 0.34);
+      --accent: #d6dee8;
+      --accent-soft: #9ca8b4;
+      --mac-blue: #2f9bff;
+      --mac-blue-deep: #0867d7;
+      --mac-blue-soft: rgba(47, 155, 255, 0.18);
+      --text: #f4f8ff;
+      --muted: #a9b4c3;
+      --muted-soft: #748194;
+      --error: #ff7d6e;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        linear-gradient(145deg, #12171d 0%, #101318 52%, #181c21 100%);
       color: var(--text);
-      font-family: var(--mono);
+      font-family: var(--font);
     }
 
-    /* Subtle grid texture */
     body::before {
-      content: '';
+      content: "";
       position: fixed;
       inset: 0;
-      background-image:
-        linear-gradient(var(--border) 1px, transparent 1px),
-        linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 48px 48px;
-      opacity: 0.25;
       pointer-events: none;
-      z-index: 0;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 34%),
+        radial-gradient(circle at 50% 45%, transparent 0, rgba(0, 0, 0, 0.28) 72%);
+      z-index: -1;
     }
+
+    button, input { font: inherit; }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    a { color: inherit; }
 
     .page {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      width: min(100%, 1180px);
+      margin: 0 auto;
+      padding: 18px clamp(18px, 4vw, 42px) 14px;
     }
 
-    /* Left panel — editorial */
-    .panel-left {
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 35% 20%, rgba(255, 255, 255, 0.32), transparent 24%),
+        linear-gradient(145deg, #6f7d8a, #333b45);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+      flex: 0 0 auto;
+    }
+
+    .brand-copy {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      padding: 48px;
-      border-right: 1px solid var(--border);
+      gap: 2px;
     }
 
-    .wordmark {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.25em;
-      color: var(--amber);
-      text-transform: uppercase;
+    .brand-name {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0;
     }
 
-    .headline {
-      font-family: var(--serif);
-      font-size: clamp(2.5rem, 4vw, 4.5rem);
-      font-weight: 400;
-      line-height: 1.1;
-      color: var(--text);
-    }
-
-    .headline em {
-      font-style: italic;
-      color: var(--amber);
-    }
-
-    .tagline {
-      font-size: 11px;
-      letter-spacing: 0.1em;
+    .brand-subtitle {
       color: var(--muted);
-      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 500;
     }
 
-    /* Right panel — form */
-    .panel-right {
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 38px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      padding: 0 20px;
+      color: #0f141a;
+      background: linear-gradient(180deg, #f1f5f8, #b9c3cd);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.62);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(180deg, #74c4ff, var(--mac-blue));
+      border-color: rgba(132, 205, 255, 0.48);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0 8px;
+      text-align: center;
+    }
+
+    .hero-brand {
+      margin-bottom: 2px;
+    }
+
+    h1 {
+      max-width: 760px;
+      font-size: 4rem;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .hero-copy {
+      max-width: 640px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .visual-stage {
+      position: relative;
+      width: min(100%, 1060px);
+      min-height: 390px;
+      margin: 0 auto;
+      border-radius: 40px;
+      isolation: isolate;
+    }
+
+    .visual-stage::before {
+      content: none;
+    }
+
+    .orbit {
+      position: absolute;
+      inset: 72px 44px 48px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      opacity: 0.42;
+    }
+
+    .hub {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(42vw, 300px);
+      aspect-ratio: 1.34;
+      transform: translate(-50%, -44%);
+      filter: drop-shadow(0 28px 58px rgba(0, 0, 0, 0.42));
+      z-index: 4;
+    }
+
+    .folder-back {
+      position: absolute;
+      inset: 0 6% 18%;
+      border: 1px solid rgba(116, 197, 255, 0.38);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.32), transparent 26%),
+        linear-gradient(145deg, #66bdff, var(--mac-blue-deep));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.38),
+        inset 0 -18px 40px rgba(2, 45, 112, 0.24);
+    }
+
+    .folder-tab {
+      position: absolute;
+      left: 26px;
+      top: -18px;
+      width: 38%;
+      height: 54px;
+      border: 1px solid rgba(116, 197, 255, 0.42);
+      border-bottom: 0;
+      border-radius: 24px 24px 6px 6px;
+      background: linear-gradient(145deg, #8bd0ff, #238bed);
+      transform: skewX(-7deg);
+    }
+
+    .folder-front {
+      position: absolute;
+      inset: 28% 0 0;
+      border: 1px solid rgba(185, 226, 255, 0.3);
+      border-radius: 30px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 38%),
+        linear-gradient(145deg, #43adff, #075dcd);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.42),
+        inset 0 -22px 48px rgba(0, 40, 112, 0.28);
+    }
+
+    .folder-badge {
+      position: absolute;
+      left: 50%;
+      top: 58%;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 999px;
+      background: rgba(4, 17, 33, 0.36);
+      color: #eff9ff;
+      font-size: 13px;
+      font-weight: 800;
+      transform: translate(-50%, -50%);
+      backdrop-filter: blur(16px);
+    }
+
+    .file-chip,
+    .link-card {
+      position: absolute;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 18px 58px rgba(0, 0, 0, 0.24);
+      backdrop-filter: blur(18px);
+      transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+    }
+
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 116px;
+      padding: 9px 10px;
+      border-radius: 15px;
+      color: #dceeff;
+      font-size: 12px;
+      font-weight: 800;
+      animation: float 7s ease-in-out infinite;
+      z-index: 6;
+    }
+
+    .file-chip svg,
+    .link-card svg,
+    .brand-mark svg {
+      width: 20px;
+      height: 20px;
+      flex: 0 0 auto;
+    }
+
+    .file-chip span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .file-chip:hover,
+    .link-card:hover {
+      border-color: rgba(116, 197, 255, 0.46);
+      background: rgba(28, 67, 100, 0.62);
+      box-shadow: 0 20px 62px rgba(0, 0, 0, 0.26);
+    }
+
+    .file-chip:hover,
+    .file-chip:hover span,
+    .link-card:hover strong,
+    .link-card:hover span {
+      color: #d8efff;
+    }
+
+    .file-image { left: 12%; top: 28%; animation-delay: -0.4s; }
+    .file-video { left: 25%; top: 10%; animation-delay: -1.6s; }
+    .file-doc { right: 23%; top: 12%; animation-delay: -2.4s; }
+    .file-zip { right: 11%; top: 32%; animation-delay: -3.2s; }
+
+    .connector {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 36%;
+      height: 2px;
+      transform-origin: left center;
+      background: linear-gradient(90deg, rgba(214, 222, 232, 0), rgba(214, 222, 232, 0.46), rgba(214, 222, 232, 0));
+      opacity: 0.46;
+      z-index: 2;
+      animation: linePulse 4s ease-in-out infinite;
+    }
+
+    .connector.one { transform: rotate(-22deg); }
+    .connector.two { transform: rotate(17deg); animation-delay: -0.8s; }
+    .connector.three { transform: rotate(48deg); animation-delay: -1.5s; }
+    .connector.four { transform: rotate(150deg); animation-delay: -2.1s; }
+    .connector.five { transform: rotate(205deg); animation-delay: -2.7s; }
+
+    .link-card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+      width: min(260px, 27vw);
+      min-width: 196px;
+      padding: 10px 10px 10px 12px;
+      border-radius: 16px;
+      z-index: 5;
+      animation: drift 8s ease-in-out infinite;
+    }
+
+    .link-card strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #f4f9ff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .link-card span {
+      display: block;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .copy-pill {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--accent);
+      transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+    }
+
+    .link-card:hover .copy-pill,
+    .copy-pill:hover {
+      border-color: rgba(116, 197, 255, 0.5);
+      background: var(--mac-blue-soft);
+      color: #c9e9ff;
+    }
+
+    .link-one { right: 5%; top: 24%; animation-delay: -0.6s; }
+    .link-two { right: 11%; bottom: 18%; animation-delay: -1.8s; }
+    .link-three { left: 8%; bottom: 19%; animation-delay: -2.7s; }
+
+    .flow-label {
+      position: absolute;
+      left: 50%;
+      bottom: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 48px;
-    }
-
-    .form-card {
-      width: 100%;
-      max-width: 360px;
-      opacity: 0;
-      transform: translateY(12px);
-      animation: rise 0.5s ease 0.1s forwards;
-    }
-
-    @keyframes rise {
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .form-header {
-      margin-bottom: 40px;
-    }
-
-    .form-header h2 {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
+      gap: 10px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
       color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      transform: translateX(-50%);
+      backdrop-filter: blur(16px);
+      white-space: nowrap;
+    }
+
+    .flow-label b { color: var(--text); }
+    .flow-label span { color: var(--accent-soft); }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 8px 0 8px;
+    }
+
+    .feature-card {
+      min-height: 112px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(18px);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(116, 197, 255, 0.42);
+      background: rgba(28, 67, 100, 0.5);
+    }
+
+    .feature-icon {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      margin-bottom: 12px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+      transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+      background: var(--mac-blue-soft);
+      color: #c9e9ff;
+      box-shadow: inset 0 0 0 1px rgba(116, 197, 255, 0.28);
+    }
+
+    .feature-card h2 {
+      margin-bottom: 10px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .feature-card p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .site-footer {
+      padding: 8px 0 0;
+      color: var(--muted-soft);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .site-footer a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(5, 9, 14, 0.68);
+      backdrop-filter: blur(18px);
+    }
+
+    .modal.open { display: flex; }
+
+    .login-panel {
+      width: min(100%, 420px);
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: var(--panel-strong);
+      box-shadow: var(--shadow);
+    }
+
+    .login-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .login-header h2 {
       margin-bottom: 8px;
+      font-size: 22px;
+      letter-spacing: 0;
     }
 
-    .form-header p {
-      font-family: var(--serif);
-      font-size: 1.5rem;
+    .login-header p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .close-btn {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
       color: var(--text);
+      flex: 0 0 auto;
+      transition: background 0.18s ease, border-color 0.18s ease;
     }
 
-    .field {
-      margin-bottom: 20px;
+    .close-btn:hover {
+      border-color: rgba(255, 255, 255, 0.24);
+      background: rgba(255, 255, 255, 0.08);
     }
+
+    .field { margin-bottom: 16px; }
 
     label {
       display: block;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
       margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
     }
 
     input {
       width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      min-height: 48px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(8, 13, 19, 0.62);
       color: var(--text);
-      font-family: var(--mono);
-      font-size: 14px;
-      padding: 12px 14px;
       outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      -webkit-appearance: none;
-      border-radius: 0;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
-    input::placeholder { color: var(--muted); }
+    input::placeholder { color: #667286; }
 
     input:focus {
-      border-color: var(--amber-dim);
-      box-shadow: 0 0 0 3px rgba(200, 169, 110, 0.08);
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 4px rgba(214, 222, 232, 0.08);
     }
 
     .error-msg {
       display: none;
-      align-items: center;
-      gap: 8px;
-      background: rgba(196, 106, 85, 0.08);
-      border: 1px solid rgba(196, 106, 85, 0.3);
-      color: var(--error);
-      font-size: 12px;
-      padding: 10px 14px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 125, 110, 0.35);
+      border-radius: 16px;
+      background: rgba(255, 125, 110, 0.1);
+      color: #ffd1ca;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.45;
     }
 
-    .error-msg.visible { display: flex; }
-
-    .error-msg::before {
-      content: '!';
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-      border: 1px solid var(--error);
-      font-size: 10px;
-      font-weight: 600;
-      flex-shrink: 0;
-    }
+    .error-msg.visible { display: block; }
 
     button[type="submit"] {
       width: 100%;
-      background: var(--amber);
-      color: #0c0c0b;
-      border: none;
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      padding: 14px;
-      cursor: pointer;
-      transition: background 0.15s, opacity 0.15s;
+      min-height: 50px;
       margin-top: 4px;
     }
 
-    button[type="submit"]:hover { background: #d4b87a; }
-    button[type="submit"]:active { background: #b8963e; }
-    button[type="submit"]:disabled { opacity: 0.5; cursor: not-allowed; }
-
     .spinner {
       display: none;
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(12,12,11,0.3);
-      border-top-color: #0c0c0b;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(6, 18, 31, 0.28);
+      border-top-color: #06121f;
       border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      margin: 0 auto;
+      animation: spin 0.7s linear infinite;
     }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
 
     button.loading .btn-text { display: none; }
     button.loading .spinner { display: block; }
+    button:disabled { cursor: not-allowed; opacity: 0.64; }
 
-    /* Divider */
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 28px 0 0;
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes float {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      50% { transform: translate3d(0, -14px, 0); }
     }
 
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
+    @keyframes drift {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      50% { transform: translate3d(0, 10px, 0); }
     }
 
-    .divider span {
-      font-size: 10px;
-      letter-spacing: 0.15em;
-      color: var(--muted);
-      text-transform: uppercase;
+    @keyframes linePulse {
+      0%, 100% { opacity: 0.34; }
+      50% { opacity: 0.88; }
     }
 
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 16px 24px;
-      text-align: center;
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-      background: var(--bg);
-      z-index: 100;
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
     }
 
-    footer a {
-      color: var(--amber);
-      text-decoration: none;
-      transition: color 0.15s;
+    @media (max-width: 920px) {
+      h1 {
+        font-size: 3.4rem;
+      }
+
+      .visual-stage {
+        min-height: 430px;
+      }
+
+      .orbit { inset: 52px 8px 34px; }
+
+      .file-image { left: 3%; top: 18%; }
+      .file-video { left: 8%; top: 5%; }
+      .file-doc { right: 7%; top: 5%; }
+      .file-zip { right: 3%; top: 20%; }
+
+      .link-card {
+        width: min(250px, 34vw);
+      }
+
+      .link-one { right: 0; top: 42%; }
+      .link-two { right: 2%; bottom: 18%; }
+      .link-three { left: 2%; bottom: 18%; }
+
+      .feature-card {
+        min-height: auto;
+      }
+
     }
 
-    footer a:hover { color: var(--text); }
-
-    /* Responsive */
     @media (max-width: 640px) {
-      .page { grid-template-columns: 1fr; }
-      .panel-left { display: none; }
-      .panel-right { padding: 32px 24px; align-items: flex-start; padding-top: 64px; }
+      .page {
+        padding-inline: 16px;
+        padding-bottom: 42px;
+      }
+
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 13px;
+      }
+
+      .brand-subtitle {
+        display: none;
+      }
+
+      .hero {
+        padding-top: 8px;
+      }
+
+      h1 {
+        font-size: 2.75rem;
+      }
+
+      .hero-copy {
+        font-size: 1rem;
+      }
+
+      .visual-stage {
+        min-height: 560px;
+        margin-top: -6px;
+      }
+
+      .hub {
+        width: min(82vw, 280px);
+        top: 40%;
+      }
+
+      .folder-tab {
+        left: 24px;
+        top: -18px;
+        height: 54px;
+      }
+
+      .file-chip {
+        min-width: 112px;
+        padding: 10px;
+        border-radius: 16px;
+      }
+
+      .file-image { left: 0; top: 11%; }
+      .file-video { left: auto; right: 0; top: 15%; }
+      .file-doc { left: 0; right: auto; top: 63%; }
+      .file-zip { right: 0; top: 62%; }
+
+      .connector {
+        display: none;
+      }
+
+      .link-card {
+        left: 50%;
+        right: auto;
+        width: min(100%, 330px);
+        transform: translateX(-50%);
+      }
+
+      .link-card:hover,
+      .link-card {
+        animation-name: none;
+      }
+
+      .link-one { top: 49%; }
+      .link-two { bottom: 8%; }
+      .link-three { bottom: 22%; }
+
+      .flow-label {
+        bottom: 0;
+        width: min(100%, 340px);
+        white-space: normal;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+        padding-top: 8px;
+        padding-bottom: 18px;
+      }
+
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <aside class="panel-left">
-      <div class="wordmark">Media</div>
-      <div>
-        <h1 class="headline">Your files,<br /><em>your rules.</em></h1>
-      </div>
-      <div class="tagline">Secure · Fast · Linkable</div>
-    </aside>
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="brand hero-brand" aria-label="Share by Software Pulses">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 7.5c0-1.1.9-2 2-2h4.35c.57 0 1.11.24 1.49.67l1.08 1.21c.38.43.92.67 1.49.67H19c1.1 0 2 .9 2 2v6.45c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <span class="brand-copy">
+            <span class="brand-name">Share</span>
+            <span class="brand-subtitle">by Software Pulses</span>
+          </span>
+        </div>
+        <h1 id="hero-title">Your files, your rules.</h1>
+        <p class="hero-copy">
+          Store images, videos, and documents in one place, then generate instant shareable links.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" type="button" data-open-login>Open Share</button>
+        </div>
+      </section>
 
-    <main class="panel-right">
-      <div class="form-card">
-        <div class="form-header">
-          <h2>Access portal</h2>
-          <p>Sign in to continue</p>
+      <section class="visual-stage" aria-label="Upload media, generate links, and share everywhere">
+        <div class="orbit" aria-hidden="true"></div>
+
+        <div class="connector one" aria-hidden="true"></div>
+        <div class="connector two" aria-hidden="true"></div>
+        <div class="connector three" aria-hidden="true"></div>
+        <div class="connector four" aria-hidden="true"></div>
+        <div class="connector five" aria-hidden="true"></div>
+
+        <div class="file-chip file-image" aria-label="Image file uploading">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11Z" stroke="currentColor" stroke-width="1.7" />
+            <path d="m5 17 4.2-4.2a1.6 1.6 0 0 1 2.26 0L13 14.34l1.15-1.15a1.6 1.6 0 0 1 2.26 0L20 16.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+            <path d="M15.5 8.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+          </svg>
+          Image <span>upload</span>
         </div>
 
-        <form id="loginForm" novalidate>
-          <div class="error-msg" id="errorMsg" role="alert"></div>
+        <div class="file-chip file-video" aria-label="Video file uploading">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h8A2.5 2.5 0 0 1 17 8.5v7a2.5 2.5 0 0 1-2.5 2.5h-8A2.5 2.5 0 0 1 4 15.5v-7Z" stroke="currentColor" stroke-width="1.7" />
+            <path d="m17 10.5 3-1.75v6.5l-3-1.75" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+          </svg>
+          Video <span>upload</span>
+        </div>
 
-          <div class="field">
-            <label for="username">Username</label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              autocomplete="username"
-              placeholder="admin"
-              required
-            />
+        <div class="file-chip file-doc" aria-label="Document file uploading">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 3.8h6.2L18 8.6v11.6H7V3.8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+            <path d="M13 4v5h5M9.5 13h5M9.5 16h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+          </svg>
+          Doc <span>store</span>
+        </div>
+
+        <div class="file-chip file-zip" aria-label="Archive file uploading">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 4h10v16H7V4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+            <path d="M11 4v3h2v3h-2v3h2v3h-2v4M10 20h4" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+          </svg>
+          Zip <span>store</span>
+        </div>
+
+        <div class="hub" aria-hidden="true">
+          <div class="folder-tab"></div>
+          <div class="folder-back"></div>
+          <div class="folder-front"></div>
+          <div class="folder-badge">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 4v10M8 10l4 4 4-4M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Share Hub
           </div>
+        </div>
 
-          <div class="field">
-            <label for="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              placeholder="••••••••"
-              required
-            />
+        <article class="link-card link-one">
+          <div>
+            <strong>Share link</strong>
+            <span>share.softwarepulses.com/a8x42</span>
           </div>
+          <span class="copy-pill" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9 9h9v11H9V9Z" stroke="currentColor" stroke-width="1.7" />
+              <path d="M6 15H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+            </svg>
+          </span>
+        </article>
 
-          <button type="submit" id="submitBtn">
-            <span class="btn-text">Sign In →</span>
-            <span class="spinner"></span>
-          </button>
-        </form>
+        <article class="link-card link-two">
+          <div>
+            <strong>Copied URL</strong>
+            <span>share.softwarepulses.com/v9m21</span>
+          </div>
+          <span class="copy-pill" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9.5 14.5 14.5 9.5M10.5 7.5l1-1a4 4 0 0 1 5.66 5.66l-1 1M13.5 16.5l-1 1a4 4 0 0 1-5.66-5.66l1-1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+            </svg>
+          </span>
+        </article>
 
-        <div class="divider"><span>v1.0</span></div>
-      </div>
+        <article class="link-card link-three">
+          <div>
+            <strong>Ready to send</strong>
+            <span>share.softwarepulses.com/p3k77</span>
+          </div>
+          <span class="copy-pill" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m5 12 14-7-4 14-3-5-7-2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+            </svg>
+          </span>
+        </article>
+
+        <div class="flow-label" aria-hidden="true">
+          <b>Upload media</b><span>-></span><b>Generate links</b><span>-></span><b>Share instantly</b>
+        </div>
+      </section>
+
+      <section class="features" id="features" aria-label="Share features">
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 4v10M8 10l4 4 4-4M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <h2>Upload Any File</h2>
+          <p>Images, videos, documents, and archives stored in one secure place.</p>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9.5 14.5 14.5 9.5M10.5 7.5l1-1a4 4 0 0 1 5.66 5.66l-1 1M13.5 16.5l-1 1a4 4 0 0 1-5.66-5.66l1-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </div>
+          <h2>Generate Links</h2>
+          <p>Instantly create simple shareable URLs for every upload.</p>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m5 12 14-7-4 14-3-5-7-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <h2>Share Anywhere</h2>
+          <p>Copy and send media links across devices, teams, and platforms.</p>
+        </article>
+      </section>
+
     </main>
+
+    <footer class="site-footer">
+      a product of <a href="https://softwarepulses.com" target="_blank" rel="noopener">softwarepulses</a>
+    </footer>
   </div>
 
-  <footer>
-    a product of <a href="https://softwarepulses.com" target="_blank" rel="noopener">softwarepulses</a>
-  </footer>
+  <div class="modal" id="loginModal" aria-hidden="true">
+    <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <div class="login-header">
+        <div>
+          <h2 id="loginTitle">Sign in to Share</h2>
+          <p>Access the dashboard to upload files and manage links.</p>
+        </div>
+        <button class="close-btn" type="button" id="closeLogin" aria-label="Close sign in">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+            <path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="error-msg" id="errorMsg" role="alert"></div>
+
+        <div class="field">
+          <label for="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autocomplete="username"
+            placeholder="admin"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Password"
+            required
+          />
+        </div>
+
+        <button class="btn btn-primary" type="submit" id="submitBtn">
+          <span class="btn-text">Sign In</span>
+          <span class="spinner"></span>
+        </button>
+      </form>
+    </div>
+  </div>
 
   <script>
     const form = document.getElementById('loginForm');
     const btn = document.getElementById('submitBtn');
     const errorMsg = document.getElementById('errorMsg');
+    const modal = document.getElementById('loginModal');
+    const closeLogin = document.getElementById('closeLogin');
+    const openLoginButtons = document.querySelectorAll('[data-open-login]');
+    const usernameInput = document.getElementById('username');
+
+    function openLogin() {
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      clearError();
+      setTimeout(() => usernameInput.focus(), 80);
+    }
+
+    function closeLoginModal() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
 
     function showError(msg) {
       errorMsg.textContent = msg;
@@ -352,6 +987,17 @@
     function clearError() {
       errorMsg.classList.remove('visible');
     }
+
+    openLoginButtons.forEach((button) => button.addEventListener('click', openLogin));
+    closeLogin.addEventListener('click', closeLoginModal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeLoginModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('open')) closeLoginModal();
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
