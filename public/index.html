@@ -63,7 +63,7 @@
     .page {
       width: min(100%, 1180px);
       margin: 0 auto;
-      padding: 46px clamp(18px, 4vw, 42px) 64px;
+      padding: 18px clamp(18px, 4vw, 42px) 14px;
     }
 
     .brand {
@@ -112,7 +112,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      min-height: 42px;
+      min-height: 38px;
       border-radius: 999px;
       font-size: 14px;
       font-weight: 700;
@@ -139,18 +139,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 26px;
-      padding: 26px 0 28px;
+      gap: 12px;
+      padding: 4px 0 8px;
       text-align: center;
     }
 
     .hero-brand {
-      margin-bottom: 10px;
+      margin-bottom: 2px;
     }
 
     h1 {
       max-width: 760px;
-      font-size: 5.7rem;
+      font-size: 4rem;
       line-height: 1;
       font-weight: 800;
       letter-spacing: 0;
@@ -159,8 +159,8 @@
     .hero-copy {
       max-width: 640px;
       color: var(--muted);
-      font-size: 1.16rem;
-      line-height: 1.7;
+      font-size: 1rem;
+      line-height: 1.45;
     }
 
     .hero-actions {
@@ -173,7 +173,7 @@
     .visual-stage {
       position: relative;
       width: min(100%, 1060px);
-      min-height: 620px;
+      min-height: 390px;
       margin: 0 auto;
       border-radius: 40px;
       isolation: isolate;
@@ -195,7 +195,7 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      width: min(62vw, 420px);
+      width: min(42vw, 300px);
       aspect-ratio: 1.34;
       transform: translate(-50%, -44%);
       filter: drop-shadow(0 28px 58px rgba(0, 0, 0, 0.42));
@@ -217,10 +217,10 @@
 
     .folder-tab {
       position: absolute;
-      left: 34px;
-      top: -24px;
+      left: 26px;
+      top: -18px;
       width: 38%;
-      height: 72px;
+      height: 54px;
       border: 1px solid rgba(116, 197, 255, 0.42);
       border-bottom: 0;
       border-radius: 24px 24px 6px 6px;
@@ -273,11 +273,11 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      min-width: 128px;
-      padding: 12px;
-      border-radius: 18px;
+      min-width: 116px;
+      padding: 9px 10px;
+      border-radius: 15px;
       color: #dceeff;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
       animation: float 7s ease-in-out infinite;
       z-index: 6;
@@ -311,16 +311,16 @@
       color: #d8efff;
     }
 
-    .file-image { left: 9%; top: 25%; animation-delay: -0.4s; }
-    .file-video { left: 21%; top: 7%; animation-delay: -1.6s; }
-    .file-doc { right: 18%; top: 10%; animation-delay: -2.4s; }
-    .file-zip { right: 7%; top: 32%; animation-delay: -3.2s; }
+    .file-image { left: 12%; top: 28%; animation-delay: -0.4s; }
+    .file-video { left: 25%; top: 10%; animation-delay: -1.6s; }
+    .file-doc { right: 23%; top: 12%; animation-delay: -2.4s; }
+    .file-zip { right: 11%; top: 32%; animation-delay: -3.2s; }
 
     .connector {
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 43%;
+      width: 36%;
       height: 2px;
       transform-origin: left center;
       background: linear-gradient(90deg, rgba(214, 222, 232, 0), rgba(214, 222, 232, 0.46), rgba(214, 222, 232, 0));
@@ -340,10 +340,10 @@
       grid-template-columns: 1fr auto;
       align-items: center;
       gap: 12px;
-      width: min(280px, 30vw);
-      min-width: 216px;
-      padding: 12px 12px 12px 14px;
-      border-radius: 20px;
+      width: min(260px, 27vw);
+      min-width: 196px;
+      padding: 10px 10px 10px 12px;
+      border-radius: 16px;
       z-index: 5;
       animation: drift 8s ease-in-out infinite;
     }
@@ -369,8 +369,8 @@
     .copy-pill {
       display: grid;
       place-items: center;
-      width: 38px;
-      height: 38px;
+      width: 34px;
+      height: 34px;
       border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 13px;
       background: rgba(255, 255, 255, 0.07);
@@ -385,24 +385,24 @@
       color: #c9e9ff;
     }
 
-    .link-one { right: 2%; top: 22%; animation-delay: -0.6s; }
-    .link-two { right: 8%; bottom: 18%; animation-delay: -1.8s; }
-    .link-three { left: 5%; bottom: 20%; animation-delay: -2.7s; }
+    .link-one { right: 5%; top: 24%; animation-delay: -0.6s; }
+    .link-two { right: 11%; bottom: 18%; animation-delay: -1.8s; }
+    .link-three { left: 8%; bottom: 19%; animation-delay: -2.7s; }
 
     .flow-label {
       position: absolute;
       left: 50%;
-      bottom: 38px;
+      bottom: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      padding: 10px 14px;
+      padding: 8px 12px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.045);
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
       transform: translateX(-50%);
       backdrop-filter: blur(16px);
@@ -415,13 +415,13 @@
     .features {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      padding: 28px 0 92px;
+      gap: 12px;
+      padding: 8px 0 8px;
     }
 
     .feature-card {
-      min-height: 190px;
-      padding: 24px;
+      min-height: 112px;
+      padding: 16px;
       border: 1px solid var(--line);
       border-radius: 24px;
       background: var(--panel);
@@ -441,7 +441,7 @@
       place-items: center;
       width: 44px;
       height: 44px;
-      margin-bottom: 24px;
+      margin-bottom: 12px;
       border-radius: 16px;
       background: rgba(255, 255, 255, 0.07);
       color: var(--accent);
@@ -457,18 +457,18 @@
 
     .feature-card h2 {
       margin-bottom: 10px;
-      font-size: 18px;
+      font-size: 16px;
       letter-spacing: 0;
     }
 
     .feature-card p {
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.65;
+      font-size: 13px;
+      line-height: 1.45;
     }
 
     .site-footer {
-      padding: 28px 0 0;
+      padding: 8px 0 0;
       color: var(--muted-soft);
       font-size: 13px;
       text-align: center;
@@ -632,14 +632,14 @@
 
     @media (max-width: 920px) {
       h1 {
-        font-size: 4.5rem;
+        font-size: 3.4rem;
       }
 
       .visual-stage {
-        min-height: 720px;
+        min-height: 430px;
       }
 
-      .orbit { inset: 90px 8px 70px; }
+      .orbit { inset: 52px 8px 34px; }
 
       .file-image { left: 3%; top: 18%; }
       .file-video { left: 8%; top: 5%; }
@@ -647,16 +647,12 @@
       .file-zip { right: 3%; top: 20%; }
 
       .link-card {
-        width: min(310px, 44vw);
+        width: min(250px, 34vw);
       }
 
       .link-one { right: 0; top: 42%; }
       .link-two { right: 2%; bottom: 18%; }
       .link-three { left: 2%; bottom: 18%; }
-
-      .features {
-        grid-template-columns: 1fr;
-      }
 
       .feature-card {
         min-height: auto;
@@ -685,7 +681,7 @@
       }
 
       h1 {
-        font-size: 3.25rem;
+        font-size: 2.75rem;
       }
 
       .hero-copy {
@@ -693,13 +689,13 @@
       }
 
       .visual-stage {
-        min-height: 760px;
-        margin-top: -18px;
+        min-height: 560px;
+        margin-top: -6px;
       }
 
       .hub {
-        width: min(86vw, 340px);
-        top: 42%;
+        width: min(82vw, 280px);
+        top: 40%;
       }
 
       .folder-tab {
@@ -736,8 +732,8 @@
       }
 
       .link-one { top: 49%; }
-      .link-two { bottom: 10%; }
-      .link-three { bottom: 23%; }
+      .link-two { bottom: 8%; }
+      .link-three { bottom: 22%; }
 
       .flow-label {
         bottom: 0;
@@ -746,8 +742,9 @@
       }
 
       .features {
-        padding-top: 12px;
-        padding-bottom: 64px;
+        grid-template-columns: 1fr;
+        padding-top: 8px;
+        padding-bottom: 18px;
       }
 
     }
