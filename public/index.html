@@ -454,7 +454,9 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      background: var(--bg);
+      background:
+        linear-gradient(180deg, rgba(109, 165, 255, 0.06), transparent 180px),
+        var(--bg);
     }
 
     .modal.open { display: flex; }
@@ -465,11 +467,11 @@
 
     .login-panel {
       width: min(100%, 360px);
-      padding: 0;
+      padding: 24px;
       border: 1px solid var(--border);
-      border-radius: 0;
-      background: transparent;
-      box-shadow: none;
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
     }
 
     .login-header {
@@ -477,13 +479,34 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 16px;
-      padding-bottom: 18px;
-      margin-bottom: 18px;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
       border-bottom: 1px solid var(--border);
     }
 
+    .login-title-group {
+      display: grid;
+      gap: 10px;
+    }
+
+    .login-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--blue);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .login-brand svg {
+      width: 18px;
+      height: 18px;
+    }
+
     .login-header h2 {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 600;
       letter-spacing: 0;
     }
@@ -495,11 +518,11 @@
     .close-btn {
       display: grid;
       place-items: center;
-      width: 38px;
-      height: 38px;
+      width: 34px;
+      height: 34px;
       border: 1px solid var(--border);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.04);
+      border-radius: 10px;
+      background: transparent;
       color: var(--text);
       flex: 0 0 auto;
       transition: background 0.18s ease, border-color 0.18s ease;
@@ -510,7 +533,7 @@
       background: var(--blue-soft);
     }
 
-    .field { margin-bottom: 16px; }
+    .field { margin-bottom: 14px; }
 
     label {
       display: block;
@@ -523,11 +546,11 @@
 
     input {
       width: 100%;
-      min-height: 40px;
+      min-height: 44px;
       padding: 0 14px;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      background: rgba(7, 8, 10, 0.68);
+      border-radius: 12px;
+      background: #000000;
       color: var(--text);
       outline: none;
       transition: border-color 0.18s ease, box-shadow 0.18s ease;
@@ -557,10 +580,17 @@
 
     button[type="submit"] {
       width: 100%;
-      min-height: 40px;
-      margin-top: 4px;
-      border-radius: 10px;
+      min-height: 44px;
+      margin-top: 8px;
+      border-radius: 12px;
+      border-color: rgba(109, 165, 255, 0.42);
+      background: rgba(109, 165, 255, 0.14);
+      color: #dceaff;
       font-size: 10px;
+    }
+
+    button[type="submit"]:hover {
+      background: rgba(109, 165, 255, 0.22);
     }
 
     .spinner {
@@ -771,7 +801,7 @@
 
       .modal {
         align-items: flex-start;
-        padding-top: 84px;
+        padding-top: 78px;
       }
     }
 
@@ -855,6 +885,11 @@
         width: 34px;
         height: 34px;
       }
+
+      .login-panel {
+        padding: 20px;
+        border-radius: 16px;
+      }
     }
   </style>
 </head>
@@ -874,7 +909,7 @@
       </nav>
 
       <div class="nav-actions">
-        <button class="nav-btn" type="button" data-open-login>Sign in</button>
+        <button class="nav-btn" type="button" id="sessionBtn" data-open-login>Sign in</button>
         <!-- <button class="nav-btn" type="button" data-open-login>Get started</button> -->
       </div>
     </div>
@@ -1007,7 +1042,13 @@
   <div class="modal" id="loginModal" aria-hidden="true">
     <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
       <div class="login-header">
-        <div>
+        <div class="login-title-group">
+          <span class="login-brand">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3 7.5c0-1.1.9-2 2-2h4.35c.57 0 1.11.24 1.49.67l1.08 1.21c.38.43.92.67 1.49.67H19c1.1 0 2 .9 2 2v6.45c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2v-9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+            </svg>
+            Share
+          </span>
           <h2 id="loginTitle">Sign in</h2>
         </div>
         <button class="close-btn" type="button" id="closeLogin" aria-label="Close sign in">
@@ -1061,10 +1102,64 @@
     const openLoginButtons = document.querySelectorAll('[data-open-login]');
     const usernameInput = document.getElementById('username');
     const currentYear = document.getElementById('currentYear');
+    const sessionBtn = document.getElementById('sessionBtn');
+    let activeSession = null;
 
     currentYear.textContent = new Date().getFullYear();
 
+    function decodeToken(token) {
+      try {
+        const payload = token.split('.')[1];
+        const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+        const padded = normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), '=');
+        return JSON.parse(atob(padded));
+      } catch {
+        return null;
+      }
+    }
+
+    function getActiveSession() {
+      const token = localStorage.getItem('token');
+      if (!token) return null;
+
+      const payload = decodeToken(token);
+      const isExpired = payload && payload.exp && Date.now() >= payload.exp * 1000;
+
+      if (!payload || isExpired) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentFolder');
+        return null;
+      }
+
+      return {
+        token,
+        username: payload.username || 'Dashboard',
+      };
+    }
+
+    function applySessionState() {
+      activeSession = getActiveSession();
+
+      if (!activeSession) {
+        sessionBtn.textContent = 'Sign in';
+        sessionBtn.setAttribute('aria-label', 'Sign in');
+        return;
+      }
+
+      sessionBtn.textContent = activeSession.username;
+      sessionBtn.setAttribute('aria-label', `Open dashboard for ${activeSession.username}`);
+    }
+
+    function openDashboard() {
+      window.location.href = '/dashboard';
+    }
+
     function openLogin() {
+      if (activeSession) {
+        openDashboard();
+        return;
+      }
+
       modal.classList.add('open');
       document.body.classList.add('login-open');
       modal.setAttribute('aria-hidden', 'false');
@@ -1086,6 +1181,8 @@
     function clearError() {
       errorMsg.classList.remove('visible');
     }
+
+    applySessionState();
 
     openLoginButtons.forEach((button) => button.addEventListener('click', openLogin));
     closeLogin.addEventListener('click', closeLoginModal);
