@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#000000" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="Share" />
   <meta name="format-detection" content="telephone=no" />
   <title>Share - Not Found</title>
@@ -216,8 +216,8 @@
 
     @media (max-width: 820px) {
       .nav-inner {
-        min-height: 58px;
-        padding: env(safe-area-inset-top) 16px 0;
+        min-height: calc(58px + env(safe-area-inset-top));
+        padding: calc(env(safe-area-inset-top) + 0px) 16px 0;
       }
 
       main {
