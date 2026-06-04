@@ -3,346 +3,978 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MEDIA — Sign In</title>
+  <title>Share - Software Pulses</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0c0c0b;
-      --surface: #131312;
-      --border: #2a2a28;
-      --amber: #c8a96e;
-      --amber-dim: #7a6340;
-      --text: #e8e4dc;
-      --muted: #6b6860;
-      --error: #c46a55;
+      --bg: #0b0c0e;
+      --surface: #151619;
+      --surface-2: #202126;
+      --surface-3: #111216;
+      --border: rgba(255, 255, 255, 0.12);
+      --border-strong: rgba(255, 255, 255, 0.2);
+      --text: #f1f1f3;
+      --muted: #8d8e94;
+      --muted-2: #666870;
+      --blue: #6da5ff;
+      --blue-soft: rgba(109, 165, 255, 0.14);
+      --blue-border: rgba(109, 165, 255, 0.38);
+      --error: #ff7d6e;
       --mono: 'IBM Plex Mono', monospace;
       --serif: 'EB Garamond', Georgia, serif;
     }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--mono);
-    }
+    html { scroll-behavior: smooth; }
 
-    /* Subtle grid texture */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(var(--border) 1px, transparent 1px),
-        linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 48px 48px;
-      opacity: 0.25;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .page {
-      position: relative;
-      z-index: 1;
+    body {
       min-height: 100vh;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-
-    /* Left panel — editorial */
-    .panel-left {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 48px;
-      border-right: 1px solid var(--border);
-    }
-
-    .wordmark {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.25em;
-      color: var(--amber);
-      text-transform: uppercase;
-    }
-
-    .headline {
-      font-family: var(--serif);
-      font-size: clamp(2.5rem, 4vw, 4.5rem);
-      font-weight: 400;
-      line-height: 1.1;
+      overflow-x: hidden;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 160px),
+        var(--bg);
       color: var(--text);
+      font-family: var(--mono);
+      text-rendering: geometricPrecision;
     }
 
-    .headline em {
-      font-style: italic;
-      color: var(--amber);
+    button, input { font: inherit; }
+
+    button {
+      border: 0;
+      cursor: pointer;
     }
 
-    .tagline {
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-      text-transform: uppercase;
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
-    /* Right panel — form */
-    .panel-right {
+    svg {
+      display: block;
+      flex: 0 0 auto;
+    }
+
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(11, 12, 14, 0.82);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav-inner {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      width: min(100%, 1360px);
+      min-height: 70px;
+      margin: 0 auto;
+      padding: 0 48px;
+      gap: 28px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      width: fit-content;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0;
+    }
+
+    .brand svg {
+      width: 26px;
+      height: 26px;
+      color: var(--blue);
+    }
+
+    .nav-links {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 48px;
-    }
-
-    .form-card {
-      width: 100%;
-      max-width: 360px;
-      opacity: 0;
-      transform: translateY(12px);
-      animation: rise 0.5s ease 0.1s forwards;
-    }
-
-    @keyframes rise {
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .form-header {
-      margin-bottom: 40px;
-    }
-
-    .form-header h2 {
-      font-family: var(--mono);
+      gap: 34px;
+      color: var(--muted);
       font-size: 11px;
       font-weight: 600;
-      letter-spacing: 0.25em;
       text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 8px;
+      letter-spacing: 0;
     }
 
-    .form-header p {
-      font-family: var(--serif);
-      font-size: 1.5rem;
+    .nav-links a,
+    .nav-btn,
+    .hero-btn {
+      transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 14px;
+    }
+
+    .nav-btn,
+    .hero-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 16px;
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      background: transparent;
       color: var(--text);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      white-space: nowrap;
     }
 
-    .field {
-      margin-bottom: 20px;
+    .nav-btn:hover,
+    .hero-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--blue-border);
+      background: var(--blue-soft);
+      color: #dceaff;
     }
+
+    .page {
+      width: min(100%, 1240px);
+      margin: 0 auto;
+      padding: 58px 36px 64px;
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 30px;
+      padding: 0 14px;
+      border: 1px solid rgba(109, 165, 255, 0.36);
+      border-radius: 999px;
+      background: rgba(109, 165, 255, 0.08);
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .badge svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    h1 {
+      margin-top: 34px;
+      font-family: var(--serif);
+      font-size: 38px;
+      line-height: 1.05;
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+
+    .hero-copy {
+      max-width: 760px;
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .hero-btn {
+      min-width: 150px;
+      min-height: 42px;
+      font-size: 11px;
+    }
+
+    .example-panel {
+      width: min(100%, 950px);
+      margin: 48px auto 0;
+      padding: 28px 36px 26px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+    }
+
+    .panel-label {
+      color: var(--muted-2);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .link-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 20px;
+      min-height: 50px;
+      margin-top: 18px;
+      padding: 0 24px 0 28px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface-2);
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .link-row:hover {
+      border-color: var(--blue-border);
+      background: rgba(109, 165, 255, 0.12);
+    }
+
+    .example-url {
+      overflow: hidden;
+      color: var(--blue);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 14px;
+      line-height: 1.2;
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      letter-spacing: 0;
+    }
+
+    .copy-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 34px;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .copy-action:hover { color: var(--blue); }
+
+    .copy-action svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .file-types {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .file-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .file-pill:hover {
+      border-color: var(--blue-border);
+      background: var(--blue-soft);
+      color: #dceaff;
+    }
+
+    .file-pill svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: 1fr 94px 1fr 94px 1fr;
+      align-items: start;
+      width: min(100%, 660px);
+      margin: 48px auto 0;
+      gap: 20px;
+    }
+
+    .step {
+      display: grid;
+      justify-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .step-number {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(109, 165, 255, 0.34);
+      border-radius: 999px;
+      background: rgba(109, 165, 255, 0.16);
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .step-line {
+      height: 1px;
+      margin-top: 19px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 70px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.01);
+      overflow: hidden;
+    }
+
+    .feature {
+      min-height: 210px;
+      padding: 34px;
+      text-align: left;
+    }
+
+    .feature + .feature {
+      border-left: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .feature-icon {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      background: rgba(109, 165, 255, 0.12);
+      color: var(--blue);
+      transition: color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+    }
+
+    .feature:hover .feature-icon {
+      transform: translateY(-2px);
+      background: rgba(109, 165, 255, 0.2);
+      color: #dceaff;
+    }
+
+    .feature-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .feature h2 {
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.15;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .feature p {
+      max-width: 300px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(5, 6, 8, 0.72);
+      backdrop-filter: blur(18px);
+    }
+
+    .modal.open { display: flex; }
+
+    .login-panel {
+      width: min(100%, 420px);
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: #17181c;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+    }
+
+    .login-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .login-header h2 {
+      margin-bottom: 8px;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    .login-header p {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .close-btn {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      flex: 0 0 auto;
+      transition: background 0.18s ease, border-color 0.18s ease;
+    }
+
+    .close-btn:hover {
+      border-color: var(--blue-border);
+      background: var(--blue-soft);
+    }
+
+    .field { margin-bottom: 16px; }
 
     label {
       display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 8px;
+      letter-spacing: 0;
     }
 
     input {
       width: 100%;
-      background: var(--surface);
+      min-height: 40px;
+      padding: 0 14px;
       border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(7, 8, 10, 0.68);
       color: var(--text);
-      font-family: var(--mono);
-      font-size: 14px;
-      padding: 12px 14px;
       outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      -webkit-appearance: none;
-      border-radius: 0;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
-    input::placeholder { color: var(--muted); }
+    input::placeholder { color: #5f626b; }
 
     input:focus {
-      border-color: var(--amber-dim);
-      box-shadow: 0 0 0 3px rgba(200, 169, 110, 0.08);
+      border-color: var(--blue-border);
+      box-shadow: 0 0 0 4px rgba(109, 165, 255, 0.1);
     }
 
     .error-msg {
       display: none;
-      align-items: center;
-      gap: 8px;
-      background: rgba(196, 106, 85, 0.08);
-      border: 1px solid rgba(196, 106, 85, 0.3);
-      color: var(--error);
-      font-size: 12px;
-      padding: 10px 14px;
-      margin-bottom: 20px;
-    }
-
-    .error-msg.visible { display: flex; }
-
-    .error-msg::before {
-      content: '!';
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-      border: 1px solid var(--error);
-      font-size: 10px;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 125, 110, 0.35);
+      border-radius: 14px;
+      background: rgba(255, 125, 110, 0.1);
+      color: #ffd1ca;
+      font-size: 11px;
       font-weight: 600;
-      flex-shrink: 0;
+      line-height: 1.45;
     }
+
+    .error-msg.visible { display: block; }
 
     button[type="submit"] {
       width: 100%;
-      background: var(--amber);
-      color: #0c0c0b;
-      border: none;
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      padding: 14px;
-      cursor: pointer;
-      transition: background 0.15s, opacity 0.15s;
+      min-height: 40px;
       margin-top: 4px;
+      border-radius: 14px;
+      font-size: 10px;
     }
-
-    button[type="submit"]:hover { background: #d4b87a; }
-    button[type="submit"]:active { background: #b8963e; }
-    button[type="submit"]:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .spinner {
       display: none;
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(12,12,11,0.3);
-      border-top-color: #0c0c0b;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.28);
+      border-top-color: var(--text);
       border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      margin: 0 auto;
+      animation: spin 0.7s linear infinite;
     }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
 
     button.loading .btn-text { display: none; }
     button.loading .spinner { display: block; }
+    button:disabled { cursor: not-allowed; opacity: 0.64; }
 
-    /* Divider */
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 28px 0 0;
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
     }
 
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
+    @media (max-width: 1100px) {
+      .nav-inner {
+        min-height: 66px;
+        padding: 0 28px;
+      }
+
+      .nav-links {
+        gap: 28px;
+        font-size: 10px;
+      }
+
+      .nav-actions {
+        gap: 14px;
+      }
+
+      .nav-btn {
+        min-height: 36px;
+        padding: 0 14px;
+        font-size: 10px;
+      }
+
+      .page {
+        padding-top: 52px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .hero-copy {
+        font-size: 13px;
+      }
+
+      .feature {
+        padding: 30px;
+      }
+
+      .feature p {
+        font-size: 12px;
+      }
     }
 
-    .divider span {
-      font-size: 10px;
-      letter-spacing: 0.15em;
-      color: var(--muted);
-      text-transform: uppercase;
+    @media (max-width: 820px) {
+      .site-nav {
+        position: relative;
+      }
+
+      .nav-inner {
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .nav-actions {
+        gap: 10px;
+      }
+
+      .nav-btn:first-child {
+        display: none;
+      }
+
+      .brand {
+        font-size: 12px;
+      }
+
+      .page {
+        padding: 48px 20px 54px;
+      }
+
+      .badge {
+        font-size: 10px;
+      }
+
+      h1 {
+        margin-top: 30px;
+        font-size: 30px;
+      }
+
+      .hero-copy {
+        margin-top: 18px;
+        font-size: 13px;
+      }
+
+      .hero-actions {
+        margin-top: 30px;
+      }
+
+      .hero-btn {
+        min-width: 140px;
+        min-height: 40px;
+        font-size: 10px;
+      }
+
+      .example-panel {
+        margin-top: 42px;
+        padding: 24px 20px;
+      }
+
+      .link-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 18px;
+      }
+
+      .example-url {
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .copy-action {
+        justify-content: center;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+        width: min(100%, 360px);
+      }
+
+      .step-line {
+        display: none;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+        margin-top: 54px;
+      }
+
+      .feature + .feature {
+        border-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .feature {
+        min-height: auto;
+      }
     }
 
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 16px 24px;
-      text-align: center;
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-      background: var(--bg);
-      z-index: 100;
-    }
+    @media (max-width: 520px) {
+      .nav-inner {
+        min-height: 62px;
+        padding: 0 18px;
+      }
 
-    footer a {
-      color: var(--amber);
-      text-decoration: none;
-      transition: color 0.15s;
-    }
+      .brand {
+        gap: 10px;
+        font-size: 12px;
+      }
 
-    footer a:hover { color: var(--text); }
+      .brand svg {
+        width: 24px;
+        height: 24px;
+      }
 
-    /* Responsive */
-    @media (max-width: 640px) {
-      .page { grid-template-columns: 1fr; }
-      .panel-left { display: none; }
-      .panel-right { padding: 32px 24px; align-items: flex-start; padding-top: 64px; }
+      .nav-btn {
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 13px;
+        font-size: 9px;
+      }
+
+      .page {
+        padding-top: 40px;
+      }
+
+      .badge {
+        min-height: 30px;
+        padding: 0 12px;
+        font-size: 9px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .hero-copy {
+        font-size: 12px;
+      }
+
+      .hero-actions {
+        width: 100%;
+      }
+
+      .hero-btn {
+        width: 100%;
+      }
+
+      .panel-label,
+      .file-pill {
+        font-size: 9px;
+      }
+
+      .feature {
+        padding: 28px 22px;
+      }
+
+      .feature h2 {
+        font-size: 13px;
+      }
+
+      .feature p {
+        font-size: 12px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <aside class="panel-left">
-      <div class="wordmark">Media</div>
-      <div>
-        <h1 class="headline">Your files,<br /><em>your rules.</em></h1>
-      </div>
-      <div class="tagline">Secure · Fast · Linkable</div>
-    </aside>
+  <header class="site-nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="Share home">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M3 7.5c0-1.1.9-2 2-2h4.35c.57 0 1.11.24 1.49.67l1.08 1.21c.38.43.92.67 1.49.67H19c1.1 0 2 .9 2 2v6.45c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2v-9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        </svg>
+        <span>Share</span>
+      </a>
 
-    <main class="panel-right">
-      <div class="form-card">
-        <div class="form-header">
-          <h2>Access portal</h2>
-          <p>Sign in to continue</p>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#example">Docs</a>
+        <!-- <a href="#features">Pricing</a> -->
+      </nav>
+
+      <div class="nav-actions">
+        <button class="nav-btn" type="button" data-open-login>Sign in</button>
+        <!-- <button class="nav-btn" type="button" data-open-login>Get started</button> -->
+      </div>
+    </div>
+  </header>
+
+  <main class="page" id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="badge">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="m13 2-8 12h6l-1 8 9-13h-6l0-7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        </svg>
+        Instant shareable links
+      </div>
+
+      <h1 id="hero-title">Your files, your rules.</h1>
+      <p class="hero-copy">
+        Store images, videos, and documents in one place, then share them with a single link.
+      </p>
+
+      <div class="hero-actions">
+        <button class="hero-btn" type="button" data-open-login>Open Share</button>
+        <a class="hero-btn" href="#example">See how it works</a>
+      </div>
+    </section>
+
+    <section class="example-panel" id="example" aria-label="Example share link">
+      <div class="panel-label">Example link</div>
+
+      <div class="link-row">
+        <div class="example-url">share.softwarepulses.com/p3k77</div>
+        <button class="copy-action" type="button" aria-label="Copy example link">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M9 9h9v11H9V9Z" stroke="currentColor" stroke-width="1.8" />
+            <path d="M6 15H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          Copy
+        </button>
+      </div>
+
+      <div class="file-types" aria-label="Supported file types">
+        <span class="file-pill">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11Z" stroke="currentColor" stroke-width="1.8" />
+            <path d="m5 17 4.2-4.2a1.6 1.6 0 0 1 2.26 0L13 14.34l1.15-1.15a1.6 1.6 0 0 1 2.26 0L20 16.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          Image
+        </span>
+        <span class="file-pill">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h8A2.5 2.5 0 0 1 17 8.5v7a2.5 2.5 0 0 1-2.5 2.5h-8A2.5 2.5 0 0 1 4 15.5v-7Z" stroke="currentColor" stroke-width="1.8" />
+            <path d="m17 10.5 3-1.75v6.5l-3-1.75" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+          </svg>
+          Video
+        </span>
+        <span class="file-pill">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 3.8h6.2L18 8.6v11.6H7V3.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+            <path d="M13 4v5h5M9.5 13h5M9.5 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          Doc
+        </span>
+        <span class="file-pill">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 4h10v16H7V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+            <path d="M11 4v3h2v3h-2v3h2v3h-2v4M10 20h4" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+          </svg>
+          Archive
+        </span>
+      </div>
+    </section>
+
+    <section class="steps" aria-label="How Share works">
+      <div class="step">
+        <span class="step-number">1</span>
+        <span>Upload</span>
+      </div>
+      <div class="step-line" aria-hidden="true"></div>
+      <div class="step">
+        <span class="step-number">2</span>
+        <span>Generate link</span>
+      </div>
+      <div class="step-line" aria-hidden="true"></div>
+      <div class="step">
+        <span class="step-number">3</span>
+        <span>Share</span>
+      </div>
+    </section>
+
+    <section class="features" id="features" aria-label="Share features">
+      <article class="feature">
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 4v10M8 10l4 4 4-4M5 19h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <h2>Upload any file</h2>
+        <p>Images, videos, documents, and archives - all stored in one secure place.</p>
+      </article>
+
+      <article class="feature">
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M9.5 14.5 14.5 9.5M10.5 7.5l1-1a4 4 0 0 1 5.66 5.66l-1 1M13.5 16.5l-1 1a4 4 0 0 1-5.66-5.66l1-1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+          </svg>
+        </div>
+        <h2>Instant links</h2>
+        <p>Every upload gets a short, shareable URL - ready to copy and send.</p>
+      </article>
+
+      <article class="feature">
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m5 12 14-7-4 14-3-5-7-2Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <h2>Share anywhere</h2>
+        <p>Works across devices, teams, and platforms without friction.</p>
+      </article>
+    </section>
+  </main>
+
+  <div class="modal" id="loginModal" aria-hidden="true">
+    <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <div class="login-header">
+        <div>
+          <h2 id="loginTitle">Sign in to Share</h2>
+          <p>Access the dashboard to upload files and manage links.</p>
+        </div>
+        <button class="close-btn" type="button" id="closeLogin" aria-label="Close sign in">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+            <path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="error-msg" id="errorMsg" role="alert"></div>
+
+        <div class="field">
+          <label for="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autocomplete="username"
+            placeholder="admin"
+            required
+          />
         </div>
 
-        <form id="loginForm" novalidate>
-          <div class="error-msg" id="errorMsg" role="alert"></div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Password"
+            required
+          />
+        </div>
 
-          <div class="field">
-            <label for="username">Username</label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              autocomplete="username"
-              placeholder="admin"
-              required
-            />
-          </div>
-
-          <div class="field">
-            <label for="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <button type="submit" id="submitBtn">
-            <span class="btn-text">Sign In →</span>
-            <span class="spinner"></span>
-          </button>
-        </form>
-
-        <div class="divider"><span>v1.0</span></div>
-      </div>
-    </main>
+        <button class="hero-btn" type="submit" id="submitBtn">
+          <span class="btn-text">Sign In</span>
+          <span class="spinner"></span>
+        </button>
+      </form>
+    </div>
   </div>
-
-  <footer>
-    a product of <a href="https://softwarepulses.com" target="_blank" rel="noopener">softwarepulses</a>
-  </footer>
 
   <script>
     const form = document.getElementById('loginForm');
     const btn = document.getElementById('submitBtn');
     const errorMsg = document.getElementById('errorMsg');
+    const modal = document.getElementById('loginModal');
+    const closeLogin = document.getElementById('closeLogin');
+    const openLoginButtons = document.querySelectorAll('[data-open-login]');
+    const usernameInput = document.getElementById('username');
+
+    function openLogin() {
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      clearError();
+      setTimeout(() => usernameInput.focus(), 80);
+    }
+
+    function closeLoginModal() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
 
     function showError(msg) {
       errorMsg.textContent = msg;
@@ -352,6 +984,17 @@
     function clearError() {
       errorMsg.classList.remove('visible');
     }
+
+    openLoginButtons.forEach((button) => button.addEventListener('click', openLogin));
+    closeLogin.addEventListener('click', closeLoginModal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeLoginModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('open')) closeLoginModal();
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
