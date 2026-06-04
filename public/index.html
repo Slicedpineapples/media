@@ -11,10 +11,10 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0b0c0e;
-      --surface: #151619;
-      --surface-2: #202126;
-      --surface-3: #111216;
+      --bg: #000000;
+      --surface: #080808;
+      --surface-2: #0d0d0d;
+      --surface-3: #050505;
       --border: rgba(255, 255, 255, 0.12);
       --border-strong: rgba(255, 255, 255, 0.2);
       --text: #f1f1f3;
@@ -33,9 +33,7 @@
     body {
       min-height: 100vh;
       overflow-x: hidden;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 160px),
-        var(--bg);
+      background: var(--bg);
       color: var(--text);
       font-family: var(--mono);
       text-rendering: geometricPrecision;
@@ -63,7 +61,7 @@
       top: 0;
       z-index: 20;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(11, 12, 14, 0.82);
+      background: rgba(0, 0, 0, 0.9);
       backdrop-filter: blur(18px);
     }
 
@@ -168,7 +166,7 @@
       padding: 0 14px;
       border: 1px solid rgba(109, 165, 255, 0.36);
       border-radius: 999px;
-      background: rgba(109, 165, 255, 0.08);
+      background: rgba(109, 165, 255, 0.06);
       color: var(--blue);
       font-size: 11px;
       font-weight: 600;
@@ -348,7 +346,7 @@
       height: 38px;
       border: 1px solid rgba(109, 165, 255, 0.34);
       border-radius: 999px;
-      background: rgba(109, 165, 255, 0.16);
+      background: rgba(109, 165, 255, 0.1);
       color: var(--blue);
       font-size: 12px;
       font-weight: 600;
@@ -366,7 +364,7 @@
       margin-top: 70px;
       border: 1px solid rgba(255, 255, 255, 0.03);
       border-radius: 26px;
-      background: rgba(255, 255, 255, 0.01);
+      background: #000000;
       overflow: hidden;
     }
 
@@ -456,19 +454,22 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      background: rgba(5, 6, 8, 0.72);
-      backdrop-filter: blur(18px);
+      background: var(--bg);
     }
 
     .modal.open { display: flex; }
 
+    body.login-open {
+      overflow: hidden;
+    }
+
     .login-panel {
-      width: min(100%, 420px);
-      padding: 24px;
+      width: min(100%, 360px);
+      padding: 0;
       border: 1px solid var(--border);
-      border-radius: 24px;
-      background: #17181c;
-      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
     }
 
     .login-header {
@@ -476,19 +477,19 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 24px;
+      padding-bottom: 18px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--border);
     }
 
     .login-header h2 {
-      margin-bottom: 8px;
       font-size: 14px;
+      font-weight: 600;
       letter-spacing: 0;
     }
 
     .login-header p {
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.55;
+      display: none;
     }
 
     .close-btn {
@@ -525,7 +526,7 @@
       min-height: 40px;
       padding: 0 14px;
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 10px;
       background: rgba(7, 8, 10, 0.68);
       color: var(--text);
       outline: none;
@@ -544,7 +545,7 @@
       margin-bottom: 16px;
       padding: 12px 14px;
       border: 1px solid rgba(255, 125, 110, 0.35);
-      border-radius: 14px;
+      border-radius: 10px;
       background: rgba(255, 125, 110, 0.1);
       color: #ffd1ca;
       font-size: 11px;
@@ -558,7 +559,7 @@
       width: 100%;
       min-height: 40px;
       margin-top: 4px;
-      border-radius: 14px;
+      border-radius: 10px;
       font-size: 10px;
     }
 
@@ -949,8 +950,7 @@
     <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
       <div class="login-header">
         <div>
-          <h2 id="loginTitle">Sign in to Share</h2>
-          <p>Access the dashboard to upload files and manage links.</p>
+          <h2 id="loginTitle">Sign in</h2>
         </div>
         <button class="close-btn" type="button" id="closeLogin" aria-label="Close sign in">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
@@ -1008,6 +1008,7 @@
 
     function openLogin() {
       modal.classList.add('open');
+      document.body.classList.add('login-open');
       modal.setAttribute('aria-hidden', 'false');
       clearError();
       setTimeout(() => usernameInput.focus(), 80);
@@ -1015,6 +1016,7 @@
 
     function closeLoginModal() {
       modal.classList.remove('open');
+      document.body.classList.remove('login-open');
       modal.setAttribute('aria-hidden', 'true');
     }
 
