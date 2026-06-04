@@ -421,6 +421,33 @@
       letter-spacing: 0;
     }
 
+    .site-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin: 54px auto 0;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .site-footer a {
+      color: var(--muted);
+      transition: color 0.18s ease;
+    }
+
+    .site-footer a:hover { color: var(--blue); }
+
+    .footer-divider {
+      width: 1px;
+      height: 12px;
+      background: var(--border);
+    }
+
     .modal {
       position: fixed;
       inset: 0;
@@ -698,6 +725,10 @@
       .feature {
         min-height: auto;
       }
+
+      .site-footer {
+        margin-top: 42px;
+      }
     }
 
     @media (max-width: 520px) {
@@ -904,6 +935,14 @@
         <p>Works across devices, teams, and platforms without friction.</p>
       </article>
     </section>
+
+    <footer class="site-footer">
+      <span>a product of <a href="https://softwarepulses.com" target="_blank" rel="noopener">Software Pulses</a></span>
+      <span class="footer-divider" aria-hidden="true"></span>
+      <span>&copy; <span id="currentYear"></span> Share</span>
+      <span class="footer-divider" aria-hidden="true"></span>
+      <a href="https://softwarepulses.com/terms-of-service" target="_blank" rel="noopener">Legal</a>
+    </footer>
   </main>
 
   <div class="modal" id="loginModal" aria-hidden="true">
@@ -963,6 +1002,9 @@
     const closeLogin = document.getElementById('closeLogin');
     const openLoginButtons = document.querySelectorAll('[data-open-login]');
     const usernameInput = document.getElementById('username');
+    const currentYear = document.getElementById('currentYear');
+
+    currentYear.textContent = new Date().getFullYear();
 
     function openLogin() {
       modal.classList.add('open');
