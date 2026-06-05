@@ -205,12 +205,26 @@
     }
 
     .toolbar-btn.icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: 34px;
       padding: 0;
       font-size: 16px;
       letter-spacing: 0;
       text-transform: none;
     }
+
+    .nav-chevron {
+      width: 9px;
+      height: 9px;
+      border-style: solid;
+      border-color: currentColor;
+      border-width: 0 0 2px 2px;
+    }
+
+    .nav-chevron.back { transform: rotate(45deg); }
+    .nav-chevron.forward { transform: rotate(225deg); }
 
     .toolbar-btn:hover:not(:disabled),
     .toolbar-btn.active {
@@ -227,6 +241,8 @@
       opacity: 0.36;
       cursor: not-allowed;
     }
+
+    .mobile-actions { display: none; }
 
     .file-input-hidden { display: none; }
 
@@ -967,9 +983,10 @@
         top: 0;
         z-index: 80;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
+        column-gap: 10px;
+        row-gap: 16px;
         margin: 0 -22px 28px;
-        padding: 14px 22px 16px;
+        padding: 16px 22px 18px;
         border: 0;
         border-bottom: 1px solid rgba(255,255,255,0.08);
         background: rgba(10,10,10,0.94);
@@ -983,19 +1000,28 @@
 
       #backBtn {
         width: auto;
-        min-width: 0;
+        min-width: 92px;
+        min-height: 36px;
         border: 0;
+        border-radius: 10px;
         background: transparent;
         color: #0a84ff;
-        font-size: 28px;
         font-weight: 400;
         justify-content: flex-start;
-        padding: 0;
+        gap: 4px;
+        padding: 0 6px 0 0;
+      }
+
+      #backBtn .nav-chevron {
+        width: 12px;
+        height: 12px;
+        border-width: 0 0 2px 2px;
       }
 
       #backBtn::after {
-        content: ' Browse';
-        font-size: 14px;
+        content: 'Browse';
+        font-size: 16px;
+        font-weight: 400;
         letter-spacing: 0;
       }
 
@@ -1004,7 +1030,7 @@
       }
 
       .dir-title {
-        grid-column: 2;
+        grid-column: 2 / 4;
         grid-row: 1;
         align-self: center;
         text-align: center;
@@ -1017,6 +1043,7 @@
       .toolbar-search {
         grid-column: 1 / -1;
         grid-row: 2;
+        margin-bottom: 4px;
         min-height: 48px;
         border: 0;
         border-radius: 12px;
@@ -1029,6 +1056,91 @@
 
       .toolbar-search::placeholder {
         color: #8e8e93;
+      }
+
+      .mobile-actions {
+        display: flex;
+        position: relative;
+        grid-column: 4;
+        grid-row: 1;
+        justify-content: flex-end;
+        align-self: center;
+      }
+
+      .mobile-actions-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(28,28,30,0.9);
+        color: #0a84ff;
+        font-family: inherit;
+        padding: 0;
+        transition: background 0.15s, color 0.15s, transform 0.15s;
+      }
+
+      .mobile-actions-btn:active {
+        transform: scale(0.96);
+        background: rgba(58,58,60,0.92);
+      }
+
+      .ellipsis-dot {
+        display: block;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+
+      .ellipsis-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+      }
+
+      .mobile-actions-menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        z-index: 100;
+        width: min(220px, calc(100vw - 44px));
+        padding: 6px;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px;
+        background: rgba(28,28,30,0.96);
+        box-shadow: 0 18px 44px rgba(0,0,0,0.45);
+        backdrop-filter: blur(18px);
+      }
+
+      .mobile-actions-menu[hidden] {
+        display: none;
+      }
+
+      .mobile-actions-menu button {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-height: 40px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+        color: #f5f5f7;
+        font-family: inherit;
+        font-size: 14px;
+        text-align: left;
+      }
+
+      .mobile-actions-menu button:active {
+        background: rgba(255,255,255,0.1);
+      }
+
+      .mobile-actions-menu button:disabled {
+        color: #6b6b70;
       }
 
       .toolbar-btn:not(.icon) {
@@ -1048,16 +1160,7 @@
       #uploadFolderBtn,
       #selectBtn,
       #deleteBtn {
-        grid-row: 3;
-      }
-
-      #createFolderBtn { grid-column: 1; }
-      #uploadBtn { grid-column: 2; }
-      #uploadFolderBtn { grid-column: 3; }
-      #selectBtn { grid-column: 4; }
-      #deleteBtn {
-        grid-column: 1 / -1;
-        grid-row: 4;
+        display: none;
       }
 
       #deleteBtn:disabled {
@@ -1478,12 +1581,13 @@
 
       .finder-toolbar {
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 7px;
-        grid-auto-rows: 28px;
+        column-gap: 8px;
+        row-gap: 14px;
+        grid-auto-rows: 30px;
         align-items: center;
         align-content: center;
         margin: 0 -22px 18px;
-        padding: calc(8px + env(safe-area-inset-top)) 22px 8px;
+        padding: calc(12px + env(safe-area-inset-top)) 22px 12px;
         border-radius: 0;
         border-bottom: 1px solid rgba(255,255,255,0.08);
         background: rgba(0,0,0,0.86);
@@ -1492,21 +1596,22 @@
       #backBtn {
         color: var(--amber);
         background: transparent;
-        font-size: 24px;
       }
 
       #backBtn::after {
-        font-size: 13px;
+        font-size: 15px;
       }
 
       .dir-title {
-        height: 28px;
+        grid-column: 2 / 4;
+        height: 30px;
         justify-content: center;
         font-size: 14px;
         text-align: center;
       }
 
       .toolbar-search {
+        margin-bottom: 4px;
         height: 36px;
         min-height: 36px;
         border-radius: 10px;
@@ -1521,6 +1626,11 @@
         background: rgba(10,132,255,0.12);
         color: var(--amber);
         font-size: 9px;
+      }
+
+      .mobile-actions-btn {
+        color: var(--amber);
+        background: rgba(28,28,30,0.86);
       }
 
       .file-list {
@@ -1584,10 +1694,30 @@
       <!-- Toolbar -->
       <section class="finder-toolbar">
         <div class="toolbar-nav">
-          <button class="toolbar-btn icon" id="backBtn" type="button" aria-label="Back">&lt;</button>
-          <button class="toolbar-btn icon" id="forwardBtn" type="button" aria-label="Forward">&gt;</button>
+          <button class="toolbar-btn icon" id="backBtn" type="button" aria-label="Back">
+            <span class="nav-chevron back" aria-hidden="true"></span>
+          </button>
+          <button class="toolbar-btn icon" id="forwardBtn" type="button" aria-label="Forward">
+            <span class="nav-chevron forward" aria-hidden="true"></span>
+          </button>
         </div>
         <div class="dir-title" id="dirTitle">Home</div>
+        <div class="mobile-actions" id="mobileActions">
+          <button class="mobile-actions-btn" id="mobileActionsBtn" type="button" aria-label="More actions" aria-expanded="false">
+            <span class="ellipsis-icon" aria-hidden="true">
+              <span class="ellipsis-dot"></span>
+              <span class="ellipsis-dot"></span>
+              <span class="ellipsis-dot"></span>
+            </span>
+          </button>
+          <div class="mobile-actions-menu" id="mobileActionsMenu" hidden>
+            <button type="button" data-mobile-action="new-folder">New Folder</button>
+            <button type="button" data-mobile-action="upload-file">Upload File</button>
+            <button type="button" data-mobile-action="upload-folder">Upload Folder</button>
+            <button type="button" data-mobile-action="select" id="mobileSelectAction">Select</button>
+            <button type="button" data-mobile-action="delete" id="mobileDeleteAction" disabled>Delete Selected</button>
+          </div>
+        </div>
         <input class="toolbar-search" id="searchInput" type="search" placeholder="Search" />
         <button class="toolbar-btn" id="createFolderBtn" type="button">New Folder</button>
         <button class="toolbar-btn" id="uploadBtn" type="button">Upload</button>
@@ -1880,6 +2010,11 @@
     const uploadFolderBtn = document.getElementById('uploadFolderBtn');
     const selectBtn = document.getElementById('selectBtn');
     const deleteBtn = document.getElementById('deleteBtn');
+    const mobileActions = document.getElementById('mobileActions');
+    const mobileActionsBtn = document.getElementById('mobileActionsBtn');
+    const mobileActionsMenu = document.getElementById('mobileActionsMenu');
+    const mobileSelectAction = document.getElementById('mobileSelectAction');
+    const mobileDeleteAction = document.getElementById('mobileDeleteAction');
     const previewPanel = document.getElementById('previewPanel');
     const dropZone = document.getElementById('dropZone');
     const explorerBody = document.getElementById('explorerBody');
@@ -1907,8 +2042,25 @@
     });
     selectBtn.addEventListener('click', toggleSelectMode);
     deleteBtn.addEventListener('click', deleteSelected);
+    mobileActionsBtn.addEventListener('click', event => {
+      event.stopPropagation();
+      toggleMobileActions();
+    });
+    mobileActionsMenu.addEventListener('click', event => {
+      const actionButton = event.target.closest('[data-mobile-action]');
+      if (!actionButton || actionButton.disabled) return;
+      runMobileAction(actionButton.dataset.mobileAction);
+    });
+    document.addEventListener('click', event => {
+      if (mobileActionsMenu.hidden || mobileActions.contains(event.target)) return;
+      closeMobileActions();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeMobileActions();
+    });
     searchInput.addEventListener('input', () => renderExplorer(currentContents));
     mobileQuery.addEventListener('change', () => {
+      closeMobileActions();
       if (mobileQuery.matches) clearPreview();
       renderExplorer(currentContents);
     });
@@ -2107,6 +2259,57 @@
       return currentFolder;
     }
 
+    function toggleMobileActions() {
+      if (mobileActionsMenu.hidden) openMobileActions();
+      else closeMobileActions();
+    }
+
+    function openMobileActions() {
+      mobileActionsMenu.hidden = false;
+      mobileActionsBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMobileActions() {
+      mobileActionsMenu.hidden = true;
+      mobileActionsBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function runMobileAction(action) {
+      closeMobileActions();
+
+      if (action === 'new-folder') {
+        createFolder();
+        return;
+      }
+
+      if (action === 'upload-file') {
+        if (!currentFolder) {
+          setStatus('Open a folder before uploading.', 'error');
+          return;
+        }
+        fileInput.click();
+        return;
+      }
+
+      if (action === 'upload-folder') {
+        if (!currentFolder) {
+          setStatus('Open a folder before uploading.', 'error');
+          return;
+        }
+        folderInput.click();
+        return;
+      }
+
+      if (action === 'select') {
+        toggleSelectMode();
+        return;
+      }
+
+      if (action === 'delete') {
+        deleteSelected();
+      }
+    }
+
     function showPreview(file) {
       if (mobileQuery.matches) return;
 
@@ -2247,6 +2450,8 @@
       uploadBtn.disabled = !currentFolder;
       uploadFolderBtn.disabled = !currentFolder;
       deleteBtn.disabled = !selectedItems.size;
+      mobileSelectAction.textContent = selectMode ? 'Done' : 'Select';
+      mobileDeleteAction.disabled = !selectedItems.size;
       currentFolderNote.textContent = currentFolder ? `Uploading into /${currentFolder}` : '';
     }
 
