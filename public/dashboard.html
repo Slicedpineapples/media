@@ -144,7 +144,7 @@
 
     .finder-toolbar {
       display: grid;
-      grid-template-columns: auto minmax(180px, 1fr) minmax(180px, 340px) auto auto auto auto;
+      grid-template-columns: auto minmax(180px, 1fr) minmax(180px, 340px) auto auto auto auto auto;
       gap: 10px;
       align-items: center;
       margin-bottom: 24px;
@@ -279,6 +279,18 @@
       flex-direction: column;
       gap: 2px;
       padding: 8px 0 42px;
+    }
+
+    .drop-zone {
+      position: relative;
+      outline: 1px solid transparent;
+      outline-offset: 8px;
+      transition: outline-color 0.12s, background 0.12s;
+    }
+
+    .drop-zone.drag-over {
+      outline-color: var(--amber-dim);
+      background: rgba(200, 169, 110, 0.04);
     }
 
     .explorer-body {
@@ -954,7 +966,7 @@
         position: sticky;
         top: 0;
         z-index: 80;
-        grid-template-columns: minmax(86px, 1fr) minmax(0, 1.4fr) minmax(44px, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 10px;
         margin: 0 -22px 28px;
         padding: 14px 22px 16px;
@@ -1033,6 +1045,7 @@
 
       #createFolderBtn,
       #uploadBtn,
+      #uploadFolderBtn,
       #selectBtn,
       #deleteBtn {
         grid-row: 3;
@@ -1040,7 +1053,8 @@
 
       #createFolderBtn { grid-column: 1; }
       #uploadBtn { grid-column: 2; }
-      #selectBtn { grid-column: 3; }
+      #uploadFolderBtn { grid-column: 3; }
+      #selectBtn { grid-column: 4; }
       #deleteBtn {
         grid-column: 1 / -1;
         grid-row: 4;
@@ -1265,7 +1279,7 @@
     }
 
     .finder-toolbar {
-      grid-template-columns: auto minmax(180px, 1fr) minmax(220px, 360px) auto auto auto auto;
+      grid-template-columns: auto minmax(180px, 1fr) minmax(220px, 360px) auto auto auto auto auto;
       gap: 7px;
       grid-auto-rows: 30px;
       align-items: center;
@@ -1463,7 +1477,7 @@
       }
 
       .finder-toolbar {
-        grid-template-columns: minmax(82px, 1fr) minmax(0, 1.4fr) minmax(44px, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 7px;
         grid-auto-rows: 28px;
         align-items: center;
@@ -1566,46 +1580,50 @@
       </div>
     </nav>
 
-    <!-- Toolbar -->
-    <section class="finder-toolbar">
-      <div class="toolbar-nav">
-        <button class="toolbar-btn icon" id="backBtn" type="button" aria-label="Back">&lt;</button>
-        <button class="toolbar-btn icon" id="forwardBtn" type="button" aria-label="Forward">&gt;</button>
-      </div>
-      <div class="dir-title" id="dirTitle">Home</div>
-      <input class="toolbar-search" id="searchInput" type="search" placeholder="Search" />
-      <button class="toolbar-btn" id="createFolderBtn" type="button">New Folder</button>
-      <button class="toolbar-btn" id="uploadBtn" type="button">Upload</button>
-      <button class="toolbar-btn" id="selectBtn" type="button">Select</button>
-      <button class="toolbar-btn danger" id="deleteBtn" type="button" disabled>Delete</button>
-      <input class="file-input-hidden" type="file" id="fileInput" multiple />
-      <div class="current-folder-note" id="currentFolderNote"></div>
-      <div class="progress-bar-wrap" id="progressWrap">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
-      <div class="upload-status" id="uploadStatus"></div>
-    </section>
+    <main class="drop-zone" id="dropZone">
+      <!-- Toolbar -->
+      <section class="finder-toolbar">
+        <div class="toolbar-nav">
+          <button class="toolbar-btn icon" id="backBtn" type="button" aria-label="Back">&lt;</button>
+          <button class="toolbar-btn icon" id="forwardBtn" type="button" aria-label="Forward">&gt;</button>
+        </div>
+        <div class="dir-title" id="dirTitle">Home</div>
+        <input class="toolbar-search" id="searchInput" type="search" placeholder="Search" />
+        <button class="toolbar-btn" id="createFolderBtn" type="button">New Folder</button>
+        <button class="toolbar-btn" id="uploadBtn" type="button">Upload</button>
+        <button class="toolbar-btn" id="uploadFolderBtn" type="button">Folder</button>
+        <button class="toolbar-btn" id="selectBtn" type="button">Select</button>
+        <button class="toolbar-btn danger" id="deleteBtn" type="button" disabled>Delete</button>
+        <input class="file-input-hidden" type="file" id="fileInput" multiple />
+        <input class="file-input-hidden" type="file" id="folderInput" webkitdirectory directory multiple />
+        <div class="current-folder-note" id="currentFolderNote"></div>
+        <div class="progress-bar-wrap" id="progressWrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="upload-status" id="uploadStatus"></div>
+      </section>
 
-    <!-- Files -->
-    <section class="files-section">
-      <div class="browser-bar">
-        <div class="breadcrumbs" id="breadcrumbs"></div>
-        <span class="file-count" id="fileCount"></span>
-      </div>
-      <div class="explorer-body" id="explorerBody">
-        <div class="file-list" id="fileList">
-          <div class="empty-state">
-            <span class="spinner-inline"></span>
-            <span style="font-size:12px;color:var(--muted)">Loading…</span>
+      <!-- Files -->
+      <section class="files-section">
+        <div class="browser-bar">
+          <div class="breadcrumbs" id="breadcrumbs"></div>
+          <span class="file-count" id="fileCount"></span>
+        </div>
+        <div class="explorer-body" id="explorerBody">
+          <div class="file-list" id="fileList">
+            <div class="empty-state">
+              <span class="spinner-inline"></span>
+              <span style="font-size:12px;color:var(--muted)">Loading…</span>
+            </div>
           </div>
+          <aside class="preview-panel" id="previewPanel">
+            <div class="preview-frame" id="previewFrame">Preview</div>
+            <div class="preview-name" id="previewName"></div>
+            <div class="preview-meta" id="previewMeta"></div>
+          </aside>
         </div>
-        <aside class="preview-panel" id="previewPanel">
-          <div class="preview-frame" id="previewFrame">Preview</div>
-          <div class="preview-name" id="previewName"></div>
-          <div class="preview-meta" id="previewMeta"></div>
-        </aside>
-        </div>
-    </section>
+      </section>
+    </main>
   </div>
 
   <footer>
@@ -1848,6 +1866,7 @@
 
     // ── Toolbar actions ───────────────────────────────────
     const fileInput = document.getElementById('fileInput');
+    const folderInput = document.getElementById('folderInput');
     const statusEl = document.getElementById('uploadStatus');
     const progressWrap = document.getElementById('progressWrap');
     const progressBar = document.getElementById('progressBar');
@@ -1858,9 +1877,11 @@
     const dirTitle = document.getElementById('dirTitle');
     const searchInput = document.getElementById('searchInput');
     const uploadBtn = document.getElementById('uploadBtn');
+    const uploadFolderBtn = document.getElementById('uploadFolderBtn');
     const selectBtn = document.getElementById('selectBtn');
     const deleteBtn = document.getElementById('deleteBtn');
     const previewPanel = document.getElementById('previewPanel');
+    const dropZone = document.getElementById('dropZone');
     const explorerBody = document.getElementById('explorerBody');
     const previewFrame = document.getElementById('previewFrame');
     const previewName = document.getElementById('previewName');
@@ -1876,6 +1897,13 @@
         return;
       }
       fileInput.click();
+    });
+    uploadFolderBtn.addEventListener('click', () => {
+      if (!currentFolder) {
+        setStatus('Open a folder before uploading.', 'error');
+        return;
+      }
+      folderInput.click();
     });
     selectBtn.addEventListener('click', toggleSelectMode);
     deleteBtn.addEventListener('click', deleteSelected);
@@ -1895,9 +1923,15 @@
       loadFiles(historyForward.pop(), { skipHistory: true });
     });
     fileInput.addEventListener('change', () => { uploadFiles([...fileInput.files]); fileInput.value = ''; });
+    folderInput.addEventListener('change', () => { uploadFiles([...folderInput.files]); folderInput.value = ''; });
+    dropZone.addEventListener('dragenter', handleDragEnter);
+    dropZone.addEventListener('dragover', handleDragOver);
+    dropZone.addEventListener('dragleave', handleDragLeave);
+    dropZone.addEventListener('drop', handleDrop);
 
     async function uploadFiles(files) {
-      if (!files.length) return;
+      const uploads = normalizeUploads(files);
+      if (!uploads.length) return;
       if (!currentFolder) {
         setStatus('Open a folder before uploading.', 'error');
         return;
@@ -1909,10 +1943,11 @@
       let done = 0;
       const errors = [];
 
-      for (const file of files) {
+      for (const upload of uploads) {
         const fd = new FormData();
-        fd.append('folder', selectedFolder());
-        fd.append('file', file);
+        const uploadFolder = folderForUpload(upload);
+        fd.append('folder', uploadFolder);
+        fd.append('file', upload.file);
         try {
           const res = await fetch('/upload', {
             method: 'POST',
@@ -1920,13 +1955,13 @@
             body: fd,
           });
           if (!res.ok) {
-            errors.push(`${file.name}: ${await uploadErrorMessage(res)}`);
+            errors.push(`${upload.relativePath || upload.file.name}: ${await uploadErrorMessage(res)}`);
           }
         } catch {
-          errors.push(`${file.name}: Network error`);
+          errors.push(`${upload.relativePath || upload.file.name}: Network error`);
         }
         done++;
-        progressBar.style.width = `${(done / files.length) * 100}%`;
+        progressBar.style.width = `${(done / uploads.length) * 100}%`;
       }
 
       setTimeout(() => { progressWrap.style.display = 'none'; }, 600);
@@ -1938,6 +1973,106 @@
       }
 
       loadFiles();
+    }
+
+    function normalizeUploads(files) {
+      return files
+        .filter(file => file && file.size >= 0)
+        .map(file => ({ file, relativePath: file.webkitRelativePath || file.relativePath || file.name }));
+    }
+
+    function folderForUpload(upload) {
+      const parts = String(upload.relativePath || upload.file.name).split('/').filter(Boolean);
+      parts.pop();
+      const nestedFolder = parts.join('/');
+      return [selectedFolder(), nestedFolder].filter(Boolean).join('/');
+    }
+
+    async function handleDrop(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      dropZone.classList.remove('drag-over');
+
+      if (!currentFolder) {
+        setStatus('Open a folder before uploading.', 'error');
+        return;
+      }
+
+      const files = await filesFromDrop(event.dataTransfer);
+      if (!files.length) {
+        setStatus('No supported files found in that drop.', 'error');
+        return;
+      }
+      uploadFiles(files);
+    }
+
+    function handleDragEnter(event) {
+      if (!hasDroppableItems(event.dataTransfer)) return;
+      event.preventDefault();
+      dropZone.classList.add('drag-over');
+    }
+
+    function handleDragOver(event) {
+      if (!hasDroppableItems(event.dataTransfer)) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = currentFolder ? 'copy' : 'none';
+      dropZone.classList.add('drag-over');
+    }
+
+    function handleDragLeave(event) {
+      if (dropZone.contains(event.relatedTarget)) return;
+      dropZone.classList.remove('drag-over');
+    }
+
+    function hasDroppableItems(dataTransfer) {
+      return dataTransfer && Array.from(dataTransfer.types || []).includes('Files');
+    }
+
+    async function filesFromDrop(dataTransfer) {
+      const items = Array.from(dataTransfer.items || []);
+      if (!items.length) return Array.from(dataTransfer.files || []);
+
+      const uploads = [];
+      for (const item of items) {
+        if (item.kind !== 'file') continue;
+        const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+        if (entry) {
+          uploads.push(...await filesFromEntry(entry));
+        } else {
+          const file = item.getAsFile();
+          if (file) uploads.push(file);
+        }
+      }
+      return uploads;
+    }
+
+    async function filesFromEntry(entry, parentPath = '') {
+      if (entry.isFile) {
+        return new Promise(resolve => {
+          entry.file(file => {
+            file.relativePath = parentPath ? `${parentPath}/${file.name}` : file.name;
+            resolve([file]);
+          }, () => resolve([]));
+        });
+      }
+
+      if (!entry.isDirectory) return [];
+
+      const dirPath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
+      const reader = entry.createReader();
+      const entries = await readAllDirectoryEntries(reader);
+      const nested = await Promise.all(entries.map(child => filesFromEntry(child, dirPath)));
+      return nested.flat();
+    }
+
+    async function readAllDirectoryEntries(reader) {
+      const entries = [];
+      while (true) {
+        const batch = await new Promise(resolve => reader.readEntries(resolve, () => resolve([])));
+        if (!batch.length) break;
+        entries.push(...batch);
+      }
+      return entries;
     }
 
     async function createFolder() {
@@ -2110,12 +2245,14 @@
       backBtn.disabled = !historyBack.length;
       forwardBtn.disabled = !historyForward.length;
       uploadBtn.disabled = !currentFolder;
+      uploadFolderBtn.disabled = !currentFolder;
       deleteBtn.disabled = !selectedItems.size;
       currentFolderNote.textContent = currentFolder ? `Uploading into /${currentFolder}` : '';
     }
 
     function updateUploadTarget() {
       fileInput.disabled = !currentFolder;
+      folderInput.disabled = !currentFolder;
     }
 
     async function uploadErrorMessage(res) {
