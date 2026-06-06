@@ -48,6 +48,7 @@ export function createFileHeader() {
 
 export function createBreadcrumbs(folder, onNavigate) {
   const breadcrumbs = document.createElement('div');
+  breadcrumbs.id = 'breadcrumbs';
   breadcrumbs.className = 'breadcrumbs';
   const parts = folder ? folder.split('/') : [];
   const crumbs = [{ label: 'Home', path: '' }];

@@ -1,3 +1,13 @@
+import {
+  createBreadcrumbs,
+  createExplorerItem,
+  createFileHeader,
+  createFileSort,
+  createSectionHeader,
+} from './components/explorer.js';
+import { emptyPreview, mediaPreview } from './components/media-preview.js';
+import { escapeHtml, formatBytes, formatDate } from './utils/format.js';
+
 const token = localStorage.getItem('token');
 if (!token) window.location.href = '/';
 
@@ -94,63 +104,22 @@ function renderExplorer({ folder, folders, files }) {
     const folderGrid = document.createElement('div');
     folderGrid.className = 'folder-grid';
     folderGrid.classList.toggle('selecting', selectMode);
-    folderRows.forEach((entry, i) => folderGrid.appendChild(renderExplorerItem(entry, i)));
+    folderRows.forEach((entry, i) => folderGrid.appendChild(renderItem(entry, i)));
     list.appendChild(folderGrid);
   }
 
   if (visibleFiles.length) {
-    const filesHeader = createSectionHeader('Files', visibleFiles.length);
-    const sort = document.createElement('select');
-    sort.className = 'file-sort';
-    sort.setAttribute('aria-label', 'Sort files');
-    sort.innerHTML = `
-      <option value="newest">Newest first</option>
-      <option value="oldest">Oldest first</option>
-      <option value="name">Name A-Z</option>
-    `;
-    sort.value = fileSort;
-    sort.addEventListener('change', () => {
-      fileSort = sort.value;
+    const sort = createFileSort(fileSort, value => {
+      fileSort = value;
       renderExplorer(currentContents);
     });
-    filesHeader.appendChild(sort);
-    list.appendChild(filesHeader);
-
-    const header = document.createElement('div');
-    header.className = 'file-header-row';
-    header.innerHTML = '<span>No.</span><span>Name</span><span>Copy</span><span>Size</span><span>Date uploaded</span><span>Preview</span>';
-    list.appendChild(header);
+    list.appendChild(createSectionHeader('Files', visibleFiles.length, sort));
+    list.appendChild(createFileHeader());
   }
 
   visibleFiles.forEach((entry, i) => {
-    list.appendChild(renderExplorerItem({ type: 'file', ...entry }, i));
+    list.appendChild(renderItem({ type: 'file', ...entry }, i));
   });
-
-  list.querySelectorAll('.btn-copy').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      await copyFileUrl(btn.dataset.url, { silent: true });
-      btn.textContent = 'Copied!';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'Copy link'; btn.classList.remove('copied'); }, 1800);
-    });
-  });
-}
-
-function createSectionHeader(label, itemCount) {
-  const header = document.createElement('div');
-  header.className = 'content-section-header';
-
-  const title = document.createElement('div');
-  title.className = 'content-section-title';
-  title.textContent = label;
-
-  const count = document.createElement('span');
-  count.className = 'content-section-count';
-  count.textContent = `(${itemCount})`;
-  title.appendChild(count);
-  header.appendChild(title);
-
-  return header;
 }
 
 function compareFiles(a, b) {
@@ -168,96 +137,21 @@ async function copyFileUrl(url, options = {}) {
   if (!options.silent) setStatus('Link copied.', 'success');
 }
 
-function renderExplorerItem(entry, i) {
-    const item = document.createElement('div');
-    item.className = `explorer-item ${entry.type === 'file' ? 'file-row' : 'folder-item'}`;
-    item.style.animationDelay = `${i * 30}ms`;
-    if (selectedItems.has(itemKey(entry))) item.classList.add('selected');
-
-    if (entry.type === 'file') {
-      item.innerHTML = `
-        <div class="selection-mark">✓</div>
-        <div class="file-index">${i + 1}</div>
-        <div class="file-info">
-          <div class="item-kind">File</div>
-          <div class="file-name" title="${escHtml(entry.name)}">${escHtml(displayName(entry.name))}</div>
-          <div class="file-url">${escHtml(entry.url)}</div>
-        </div>
-        <div class="file-actions">
-          <button class="btn-copy" data-url="${escHtml(entry.url)}">Copy link</button>
-        </div>
-        <div class="file-size">${formatBytes(entry.size || 0)}</div>
-        <div class="file-mobile-meta">${formatMobileDate(entry.uploadedAt)} - ${formatBytes(entry.size || 0)}</div>
-        <div class="file-date">${formatDate(entry.uploadedAt)}</div>
-        ${previewHtml(entry.name, entry.url)}
-      `;
-    } else {
-      item.innerHTML = `
-        <div class="selection-mark">✓</div>
-        <div class="file-index">${i + 1}</div>
-        <div class="folder-icon"></div>
-        <div class="file-info">
-          <div class="item-kind">Folder</div>
-          <div class="file-name" title="${escHtml(entry.name)}">${escHtml(displayName(entry.name))}</div>
-        </div>
-      `;
-      item.addEventListener('click', () => {
-        if (selectMode) toggleSelection(entry, item);
-        else navigateTo(entry.path);
-      });
-    }
-
-    if (entry.type === 'file') {
-      item.addEventListener('click', async event => {
-        if (event.target.closest('.file-actions')) return;
-        if (selectMode) {
-          toggleSelection(entry, item);
-          return;
-        }
-
-        if (window.matchMedia('(max-width: 640px)').matches) {
-          if (event.target.closest('.file-preview')) return;
-          await copyFileUrl(entry.url, { silent: true });
-          item.classList.add('copied');
-          setTimeout(() => item.classList.remove('copied'), 450);
-          return;
-        }
-
-        showPreview(entry);
-      });
-    }
-
-    return item;
+function renderItem(entry, index) {
+  return createExplorerItem(entry, index, {
+    isMobile: mobileQuery.matches,
+    isSelected: selectedItems.has(itemKey(entry)),
+    selectMode,
+    onCopy: url => copyFileUrl(url, { silent: true }),
+    onNavigate: navigateTo,
+    onPreview: showPreview,
+    onToggleSelection: toggleSelection,
+  });
 }
 
 function renderBreadcrumbs(folder) {
   const breadcrumbs = document.getElementById('breadcrumbs');
-  const parts = folder ? folder.split('/') : [];
-  const crumbs = [{ label: 'Home', path: '' }];
-
-  parts.forEach((part, index) => {
-    crumbs.push({
-      label: part,
-      path: parts.slice(0, index + 1).join('/'),
-    });
-  });
-
-  breadcrumbs.innerHTML = '';
-  crumbs.forEach((crumb, index) => {
-    if (index) {
-      const separator = document.createElement('span');
-      separator.className = 'crumb-separator';
-      separator.textContent = '/';
-      breadcrumbs.appendChild(separator);
-    }
-
-    const button = document.createElement('button');
-    button.className = 'crumb';
-    button.type = 'button';
-    button.textContent = crumb.label;
-    button.addEventListener('click', () => navigateTo(crumb.path));
-    breadcrumbs.appendChild(button);
-  });
+  breadcrumbs.replaceWith(createBreadcrumbs(folder, navigateTo));
 }
 
 function navigateTo(folder) {
@@ -276,26 +170,6 @@ function persistCurrentFolder() {
   if (currentFolder) url.searchParams.set('folder', currentFolder);
   else url.searchParams.delete('folder');
   window.history.replaceState(null, '', url);
-}
-
-function previewHtml(name, url) {
-  const safeName = escHtml(name);
-  const safeUrl = escHtml(url);
-  const ext = name.split('.').pop().toLowerCase();
-
-  if (['apng', 'avif', 'gif', 'jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
-    return `<div class="file-preview" aria-label="Preview ${safeName}"><img src="${safeUrl}" alt="${safeName}" loading="lazy" /></div>`;
-  }
-
-  if (['mp4', 'ogg', 'ogv', 'mov', 'webm'].includes(ext)) {
-    return `<div class="file-preview" aria-label="Preview ${safeName}"><video src="${safeUrl}" muted preload="metadata"></video></div>`;
-  }
-
-  if (['aac', 'flac', 'm4a', 'mp3', 'wav'].includes(ext)) {
-    return `<div class="file-preview" aria-label="Preview ${safeName}">Audio</div>`;
-  }
-
-  return `<div class="file-preview" aria-label="Preview ${safeName}">File</div>`;
 }
 
 // ── Toolbar actions ───────────────────────────────────
@@ -627,12 +501,12 @@ function showPreview(file) {
   currentPreviewPath = file.path;
   explorerBody.classList.add('preview-open');
   previewPanel.classList.add('open');
-  previewFrame.innerHTML = previewContent(file.name, file.url);
+  previewFrame.innerHTML = mediaPreview(file.name, file.url);
   previewName.textContent = file.name;
   previewMeta.innerHTML = `
     <div>Size: ${formatBytes(file.size || 0)}</div>
     <div>Uploaded: ${formatDate(file.uploadedAt)}</div>
-    <div>Path: ${escHtml(file.path)}</div>
+    <div>Path: ${escapeHtml(file.path)}</div>
   `;
 }
 
@@ -640,12 +514,7 @@ function clearPreview() {
   currentPreviewPath = '';
   explorerBody.classList.add('preview-open');
   previewPanel.classList.add('open');
-  previewFrame.innerHTML = `
-    <div class="preview-placeholder">
-      <div class="preview-placeholder-icon" aria-hidden="true"></div>
-      <span class="preview-placeholder-label">Preview</span>
-    </div>
-  `;
+  previewFrame.innerHTML = emptyPreview();
   previewName.textContent = 'No file selected';
   previewMeta.textContent = 'Select a file to see its details.';
 }
@@ -667,63 +536,6 @@ function syncPreviewWithContents(contents) {
   if (!currentPreviewPath) return;
   const previewStillExists = contents.files.some(file => file.path === currentPreviewPath);
   if (!previewStillExists) clearPreview();
-}
-
-function previewContent(name, url) {
-  const safeName = escHtml(name);
-  const safeUrl = escHtml(url);
-  const ext = name.split('.').pop().toLowerCase();
-
-  if (['apng', 'avif', 'gif', 'jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
-    return `<img src="${safeUrl}" alt="${safeName}" />`;
-  }
-  if (['mp4', 'ogg', 'ogv', 'mov', 'webm'].includes(ext)) {
-    return `<video src="${safeUrl}" controls preload="metadata"></video>`;
-  }
-  if (['aac', 'flac', 'm4a', 'mp3', 'wav'].includes(ext)) {
-    return `<audio src="${safeUrl}" controls></audio>`;
-  }
-  return 'Preview';
-}
-
-function formatBytes(bytes) {
-  if (!bytes) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB'];
-  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-  return `${(bytes / Math.pow(1024, index)).toFixed(index ? 1 : 0)} ${units[index]}`;
-}
-
-function formatDate(value) {
-  if (!value) return '-';
-  return new Intl.DateTimeFormat(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value));
-}
-
-function formatMobileDate(value) {
-  if (!value) return '-';
-  return new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(new Date(value));
-}
-
-function displayName(name) {
-  if (!mobileQuery.matches || name.length <= 16) return name;
-
-  const dotIndex = name.lastIndexOf('.');
-  if (dotIndex > 0 && dotIndex < name.length - 1) {
-    const base = name.slice(0, dotIndex);
-    const ext = name.slice(dotIndex);
-    return `${base.slice(0, 8)}.....${base.slice(-1)}${ext}`;
-  }
-
-  return `${name.slice(0, 8)}.....${name.slice(-4)}`;
 }
 
 function itemKey(item) {
@@ -817,10 +629,6 @@ function setStatus(msg, type) {
     statusEl.textContent = '';
     statusEl.className = 'upload-status';
   }, 3000);
-}
-
-function escHtml(str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 updateUploadTarget();
