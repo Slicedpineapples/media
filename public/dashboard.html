@@ -642,6 +642,10 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .file-mobile-meta {
+      display: none;
+    }
+
     .btn-copy {
       font-family: var(--mono);
       font-size: 10px;
@@ -1759,6 +1763,10 @@
       }
 
       .file-row .file-size {
+        display: none;
+      }
+
+      .file-row .file-mobile-meta {
         display: block;
         grid-column: 1;
         grid-row: 2;
@@ -1805,11 +1813,11 @@
       }
 
       .file-list.selecting .file-row .file-info,
-      .file-list.selecting .file-row .file-size {
+      .file-list.selecting .file-row .file-mobile-meta {
         grid-column: 2;
       }
 
-      .file-list.selecting .file-row .file-size {
+      .file-list.selecting .file-row .file-mobile-meta {
         padding-left: 0;
       }
 
@@ -1867,6 +1875,7 @@
             <button type="button" data-mobile-action="upload-folder">Upload Folder</button>
             <button type="button" data-mobile-action="select" id="mobileSelectAction">Select</button>
             <button type="button" data-mobile-action="delete" id="mobileDeleteAction" disabled>Delete Selected</button>
+            <button type="button" data-mobile-action="logout">Sign Out</button>
           </div>
         </div>
         <input class="toolbar-search" id="searchInput" type="search" placeholder="Search" />
@@ -2101,6 +2110,7 @@
               <button class="btn-copy" data-url="${escHtml(entry.url)}">Copy link</button>
             </div>
             <div class="file-size">${formatBytes(entry.size || 0)}</div>
+            <div class="file-mobile-meta">${formatMobileDate(entry.uploadedAt)} - ${formatBytes(entry.size || 0)}</div>
             <div class="file-date">${formatDate(entry.uploadedAt)}</div>
             ${previewHtml(entry.name, entry.url)}
           `;
@@ -2517,6 +2527,13 @@
         return;
       }
 
+      if (action === 'logout') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentFolder');
+        window.location.href = '/';
+        return;
+      }
+
       if (action === 'select') {
         toggleSelectMode();
         return;
@@ -2589,6 +2606,15 @@
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
+      }).format(new Date(value));
+    }
+
+    function formatMobileDate(value) {
+      if (!value) return '-';
+      return new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
       }).format(new Date(value));
     }
 
