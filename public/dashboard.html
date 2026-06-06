@@ -297,6 +297,45 @@
       padding: 8px 0 42px;
     }
 
+    .content-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 32px;
+      margin-top: 6px;
+    }
+
+    .content-section-title {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .content-section-count {
+      margin-left: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    .file-sort {
+      min-height: 30px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 0 28px 0 9px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .file-sort:focus {
+      border-color: var(--amber-dim);
+    }
+
     .drop-zone {
       position: relative;
       outline: 1px solid transparent;
@@ -401,12 +440,12 @@
     }
 
     .file-row {
-      grid-template-columns: 44px minmax(180px, 1fr) 84px auto 96px 152px;
+      grid-template-columns: 44px minmax(180px, 1fr) auto 96px 152px 84px;
     }
 
     .file-header-row {
       display: grid;
-      grid-template-columns: 44px minmax(180px, 1fr) 84px auto 96px 152px;
+      grid-template-columns: 44px minmax(180px, 1fr) auto 96px 152px 84px;
       gap: 14px;
       align-items: center;
       padding: 8px 12px;
@@ -667,7 +706,7 @@
 
       .file-row,
       .file-header-row {
-        grid-template-columns: 40px minmax(180px, 1fr) 76px auto 86px 132px;
+        grid-template-columns: 40px minmax(180px, 1fr) auto 86px 132px 76px;
       }
     }
 
@@ -1474,8 +1513,8 @@
     }
 
     .folder-grid {
-      gap: 38px 30px;
-      padding-top: 22px;
+      gap: 22px 20px;
+      padding: 8px 0 20px;
     }
 
     .folder-grid .explorer-item {
@@ -1639,13 +1678,27 @@
 
       .folder-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 58px 20px;
-        padding-top: 24px;
+        gap: 28px 14px;
+        padding: 8px 0 18px;
       }
 
       .folder-grid .explorer-item {
-        min-height: 124px;
+        min-height: 108px;
         padding: 0;
+      }
+
+      .content-section-header {
+        min-height: 36px;
+        margin-top: 4px;
+      }
+
+      .content-section-title {
+        font-size: 12px;
+      }
+
+      .file-sort {
+        max-width: 132px;
+        font-size: 10px;
       }
 
       .folder-grid .file-name {
@@ -1783,6 +1836,7 @@
     let historyBack = initialFolder ? [''] : [];
     let historyForward = [];
     let selectMode = false;
+    let fileSort = 'newest';
     const selectedItems = new Map();
 
     async function loadFiles(folder = currentFolder, options = {}) {
@@ -1836,7 +1890,7 @@
       const query = searchInput.value.trim().toLowerCase();
       const matches = item => !query || item.name.toLowerCase().includes(query);
       const visibleFolders = folders.filter(matches);
-      const visibleFiles = folder ? files.filter(matches) : [];
+      const visibleFiles = folder ? files.filter(matches).sort(compareFiles) : [];
       const total = visibleFolders.length + visibleFiles.length;
       count.textContent = total ? `${visibleFolders.length} folder${visibleFolders.length === 1 ? '' : 's'} · ${visibleFiles.length} file${visibleFiles.length === 1 ? '' : 's'}` : '';
       renderBreadcrumbs(folder);
@@ -1849,17 +1903,38 @@
       list.innerHTML = '';
       list.classList.toggle('selecting', selectMode);
 
-      const folderGrid = document.createElement('div');
-      folderGrid.className = 'folder-grid';
-      folderGrid.classList.toggle('selecting', selectMode);
       const folderRows = visibleFolders.map(item => ({ type: 'folder', ...item }));
-      folderRows.forEach((entry, i) => folderGrid.appendChild(renderExplorerItem(entry, i)));
-      if (folderRows.length) list.appendChild(folderGrid);
+      if (folderRows.length) {
+        list.appendChild(createSectionHeader('Folders', folderRows.length));
+
+        const folderGrid = document.createElement('div');
+        folderGrid.className = 'folder-grid';
+        folderGrid.classList.toggle('selecting', selectMode);
+        folderRows.forEach((entry, i) => folderGrid.appendChild(renderExplorerItem(entry, i)));
+        list.appendChild(folderGrid);
+      }
 
       if (visibleFiles.length) {
+        const filesHeader = createSectionHeader('Files', visibleFiles.length);
+        const sort = document.createElement('select');
+        sort.className = 'file-sort';
+        sort.setAttribute('aria-label', 'Sort files');
+        sort.innerHTML = `
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="name">Name A-Z</option>
+        `;
+        sort.value = fileSort;
+        sort.addEventListener('change', () => {
+          fileSort = sort.value;
+          renderExplorer(currentContents);
+        });
+        filesHeader.appendChild(sort);
+        list.appendChild(filesHeader);
+
         const header = document.createElement('div');
         header.className = 'file-header-row';
-        header.innerHTML = '<span>No.</span><span>Name</span><span>Preview</span><span>Copy</span><span>Size</span><span>Date uploaded</span>';
+        header.innerHTML = '<span>No.</span><span>Name</span><span>Copy</span><span>Size</span><span>Date uploaded</span><span>Preview</span>';
         list.appendChild(header);
       }
 
@@ -1877,6 +1952,33 @@
       });
     }
 
+    function createSectionHeader(label, itemCount) {
+      const header = document.createElement('div');
+      header.className = 'content-section-header';
+
+      const title = document.createElement('div');
+      title.className = 'content-section-title';
+      title.textContent = label;
+
+      const count = document.createElement('span');
+      count.className = 'content-section-count';
+      count.textContent = `(${itemCount})`;
+      title.appendChild(count);
+      header.appendChild(title);
+
+      return header;
+    }
+
+    function compareFiles(a, b) {
+      if (fileSort === 'name') {
+        return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+      }
+
+      const aTime = Date.parse(a.uploadedAt) || 0;
+      const bTime = Date.parse(b.uploadedAt) || 0;
+      return fileSort === 'oldest' ? aTime - bTime : bTime - aTime;
+    }
+
     function renderExplorerItem(entry, i) {
         const item = document.createElement('div');
         item.className = `explorer-item ${entry.type === 'file' ? 'file-row' : 'folder-item'}`;
@@ -1892,12 +1994,12 @@
               <div class="file-name" title="${escHtml(entry.name)}">${escHtml(displayName(entry.name))}</div>
               <div class="file-url">${escHtml(entry.url)}</div>
             </div>
-            ${previewHtml(entry.name, entry.url)}
             <div class="file-actions">
               <button class="btn-copy" data-url="${escHtml(entry.url)}">Copy link</button>
             </div>
             <div class="file-size">${formatBytes(entry.size || 0)}</div>
             <div class="file-date">${formatDate(entry.uploadedAt)}</div>
+            ${previewHtml(entry.name, entry.url)}
           `;
         } else {
           item.innerHTML = `
