@@ -1942,14 +1942,14 @@
           <div class="breadcrumbs" id="breadcrumbs"></div>
           <span class="file-count" id="fileCount"></span>
         </div>
-        <div class="explorer-body preview-open" id="explorerBody">
+        <div class="explorer-body" id="explorerBody">
           <div class="file-list" id="fileList">
             <div class="empty-state">
               <span class="spinner-inline"></span>
               <span style="font-size:12px;color:var(--muted)">Loading…</span>
             </div>
           </div>
-          <aside class="preview-panel open" id="previewPanel">
+          <aside class="preview-panel" id="previewPanel">
             <div class="preview-frame" id="previewFrame">
               <div class="preview-placeholder">
                 <div class="preview-placeholder-icon" aria-hidden="true"></div>
@@ -2018,7 +2018,7 @@
         selectedItems.clear();
         updateUploadTarget();
         updateToolbar();
-        syncPreviewWithContents(contents);
+        updatePreviewLayout(contents);
         renderExplorer(contents);
       } catch {
         list.innerHTML = '<div class="empty-state"><span style="color:var(--error);font-size:12px">Failed to load files. Restart the server and try again.</span></div>';
@@ -2035,7 +2035,7 @@
       currentContents = { folder: '', parent: '', folders: [], files: [] };
       updateUploadTarget();
       updateToolbar();
-      clearPreview();
+      updatePreviewLayout(currentContents);
       renderExplorer(currentContents);
     }
 
@@ -2336,7 +2336,7 @@
     searchInput.addEventListener('input', () => renderExplorer(currentContents));
     mobileQuery.addEventListener('change', () => {
       closeMobileActions();
-      if (mobileQuery.matches) clearPreview();
+      updatePreviewLayout(currentContents);
       renderExplorer(currentContents);
     });
     backBtn.addEventListener('click', () => {
@@ -2619,6 +2619,19 @@
       `;
       previewName.textContent = 'No file selected';
       previewMeta.textContent = 'Select a file to see its details.';
+    }
+
+    function updatePreviewLayout(contents) {
+      if (mobileQuery.matches || !contents.folder) {
+        currentPreviewPath = '';
+        explorerBody.classList.remove('preview-open');
+        previewPanel.classList.remove('open');
+        return;
+      }
+
+      explorerBody.classList.add('preview-open');
+      previewPanel.classList.add('open');
+      syncPreviewWithContents(contents);
     }
 
     function syncPreviewWithContents(contents) {
