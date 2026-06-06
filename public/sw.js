@@ -1,7 +1,9 @@
-const CACHE_NAME = 'share-pwa-v2';
+const CACHE_NAME = 'share-pwa-v3';
 const APP_SHELL = [
   '/',
   '/dashboard',
+  '/css/dashboard.css',
+  '/js/dashboard.js',
   '/offline.html',
   '/404.html',
   '/site.webmanifest',
