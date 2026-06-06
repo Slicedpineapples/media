@@ -28,7 +28,7 @@
       --text: #e8e4dc;
       --muted: #6b6860;
       --error: #c46a55;
-      --success: #6a9e6e;
+      --success: #0a84ff;
       --mono: 'IBM Plex Mono', monospace;
       --serif: 'EB Garamond', Georgia, serif;
     }
@@ -401,6 +401,45 @@
       width: calc(100% - 24px);
     }
 
+    .preview-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      color: var(--muted);
+    }
+
+    .preview-placeholder-icon {
+      position: relative;
+      width: 72px;
+      height: 88px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 9px;
+      background: linear-gradient(145deg, #343438, #222225);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+    }
+
+    .preview-placeholder-icon::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 15px;
+      width: 40px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.18);
+      box-shadow:
+        0 14px 0 rgba(255,255,255,0.12),
+        0 28px 0 rgba(255,255,255,0.12);
+    }
+
+    .preview-placeholder-label {
+      font-size: 11px;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
     .preview-name {
       color: var(--text);
       font-size: 13px;
@@ -628,11 +667,14 @@
       display: flex;
       gap: 8px;
       flex-shrink: 0;
-      opacity: 1;
+      opacity: 0;
       transition: opacity 0.12s;
     }
 
-    .explorer-item:hover .file-actions { opacity: 1; }
+    .explorer-item:hover .file-actions,
+    .explorer-item:focus-within .file-actions {
+      opacity: 1;
+    }
 
     .file-size,
     .file-date {
@@ -662,7 +704,7 @@
     }
 
     .btn-copy:hover { color: var(--amber); border-color: var(--amber-dim); }
-    .btn-copy.copied { color: var(--success); border-color: var(--success); background: rgba(106,158,110,0.06); }
+    .btn-copy.copied { color: var(--success); border-color: var(--success); background: rgba(10,132,255,0.1); }
 
     .btn-open {
       font-family: var(--mono);
@@ -1336,7 +1378,7 @@
       --text: #f5f5f7;
       --muted: #8e8e93;
       --error: #ff453a;
-      --success: #32d74b;
+      --success: #0a84ff;
       --mono: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'IBM Plex Mono', sans-serif;
       --serif: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
     }
@@ -1519,6 +1561,7 @@
     .folder-grid {
       gap: 22px 20px;
       padding: 8px 0 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
     }
 
     .folder-grid .explorer-item {
@@ -1899,17 +1942,22 @@
           <div class="breadcrumbs" id="breadcrumbs"></div>
           <span class="file-count" id="fileCount"></span>
         </div>
-        <div class="explorer-body" id="explorerBody">
+        <div class="explorer-body preview-open" id="explorerBody">
           <div class="file-list" id="fileList">
             <div class="empty-state">
               <span class="spinner-inline"></span>
               <span style="font-size:12px;color:var(--muted)">Loading…</span>
             </div>
           </div>
-          <aside class="preview-panel" id="previewPanel">
-            <div class="preview-frame" id="previewFrame">Preview</div>
-            <div class="preview-name" id="previewName"></div>
-            <div class="preview-meta" id="previewMeta"></div>
+          <aside class="preview-panel open" id="previewPanel">
+            <div class="preview-frame" id="previewFrame">
+              <div class="preview-placeholder">
+                <div class="preview-placeholder-icon" aria-hidden="true"></div>
+                <span class="preview-placeholder-label">Preview</span>
+              </div>
+            </div>
+            <div class="preview-name" id="previewName">No file selected</div>
+            <div class="preview-meta" id="previewMeta">Select a file to see its details.</div>
           </aside>
         </div>
       </section>
@@ -2051,7 +2099,7 @@
 
       list.querySelectorAll('.btn-copy').forEach(btn => {
         btn.addEventListener('click', async () => {
-          await copyFileUrl(btn.dataset.url);
+          await copyFileUrl(btn.dataset.url, { silent: true });
           btn.textContent = 'Copied!';
           btn.classList.add('copied');
           setTimeout(() => { btn.textContent = 'Copy link'; btn.classList.remove('copied'); }, 1800);
@@ -2561,11 +2609,16 @@
 
     function clearPreview() {
       currentPreviewPath = '';
-      explorerBody.classList.remove('preview-open');
-      previewPanel.classList.remove('open');
-      previewFrame.textContent = 'Preview';
-      previewName.textContent = '';
-      previewMeta.textContent = '';
+      explorerBody.classList.add('preview-open');
+      previewPanel.classList.add('open');
+      previewFrame.innerHTML = `
+        <div class="preview-placeholder">
+          <div class="preview-placeholder-icon" aria-hidden="true"></div>
+          <span class="preview-placeholder-label">Preview</span>
+        </div>
+      `;
+      previewName.textContent = 'No file selected';
+      previewMeta.textContent = 'Select a file to see its details.';
     }
 
     function syncPreviewWithContents(contents) {
